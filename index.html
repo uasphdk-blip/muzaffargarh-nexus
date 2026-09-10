@@ -52,7 +52,7 @@
             background: linear-gradient(90deg, rgba(0,240,255,0.2) 0%, rgba(157,0,255,0.2) 100%);
             border-color: #00F0FF;
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
-            transform: translateY(-2px) scale(1.02); /* Added zoom-in effect */
+            transform: translateY(-2px) scale(1.02);
         }
 
         .box-3d {
@@ -62,7 +62,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .box-3d:hover {
-            transform: translateY(-4px) scale(1.03); /* Added smooth zoom-in effect for sub-heading cards */
+            transform: translateY(-4px) scale(1.03);
             border-color: rgba(0, 240, 255, 0.4);
             box-shadow: 0 15px 35px -5px rgba(0, 240, 255, 0.15), 0 0 20px rgba(0, 240, 255, 0.2);
         }
@@ -424,15 +424,15 @@
 
             cardsHTML += `</div>`;
 
+            // Changed: Moved the parameter information badge up right under the title section header
             document.getElementById('workspaceContent').innerHTML = `
                 <div class="w-full flex flex-col gap-4">
-                    <div class="flex justify-between items-center bg-slate-950/60 p-3 rounded-xl border border-cyan-500/20 font-mono">
-                        <span class="text-xs text-cyan-400 font-bold uppercase"><i class="fa-solid fa-layer-group mr-2"></i> Performance Head Loaded (${subHeads.length} Parameters)</span>
-                        <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30">Live Filtered</span>
-                    </div>
                     ${cardsHTML}
                 </div>
             `;
+
+            // Updated subtitle or header area to cleanly display the parameter count next to the active filter info
+            document.getElementById('displaySubtitle').innerHTML = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year} <span class="ml-2 text-cyan-400 font-bold bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">(${subHeads.length} Parameters Loaded)</span>`;
         }
 
         function exportReport() {
