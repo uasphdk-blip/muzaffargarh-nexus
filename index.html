@@ -43,19 +43,18 @@
         .neon-glow-blue { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
 
         .cyber-btn {
-            background: linear-gradient(90deg, rgba(0,240,255,0.1) 0%, rgba(157,0,255,0.1) 100%);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: linear-gradient(90deg, rgba(0,240,255,0.05) 0%, rgba(157,0,255,0.05) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.2);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .cyber-btn:hover {
-            background: linear-gradient(90deg, rgba(0,240,255,0.25) 0%, rgba(157,0,255,0.25) 100%);
+            background: linear-gradient(90deg, rgba(0,240,255,0.2) 0%, rgba(157,0,255,0.2) 100%);
             border-color: #00F0FF;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
             transform: translateY(-2px);
         }
 
-        /* 3D Colorful Card Effect */
         .box-3d {
             background: linear-gradient(145deg, rgba(20, 32, 58, 0.9), rgba(10, 16, 30, 0.95));
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -116,8 +115,8 @@
     <!-- Main Workspace -->
     <main class="flex-1 p-6 lg:p-8 max-w-[1800px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- Left Sidebar Controls (Col-3) -->
-        <section class="lg:col-span-3 cyber-card rounded-3xl p-5 flex flex-col gap-5">
+        <!-- Left Sidebar Command Hub (Col-4) -->
+        <section class="lg:col-span-4 cyber-card rounded-3xl p-5 flex flex-col gap-5">
             <div class="flex items-center justify-between border-b border-cyan-500/20 pb-4">
                 <h2 class="font-cyber text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
                     <i class="fa-solid fa-terminal"></i> Command Hub
@@ -125,23 +124,23 @@
                 <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2.5 py-0.5 rounded font-mono border border-cyan-500/30">SECURE</span>
             </div>
 
-            <!-- Month & Year Select -->
+            <!-- Temporal Matrix Select -->
             <div class="space-y-2">
-                <label class="text-[11px] font-semibold text-slate-300">Temporal Matrix (Month/Year)</label>
+                <label class="text-[11px] font-semibold text-slate-300 font-mono">Temporal Matrix (Month/Year)</label>
                 <div class="relative">
-                    <select id="monthSelect" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-3 text-sm text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                    <select id="monthSelect" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-3 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
                         <option value="" disabled selected>Select Timeline...</option>
                     </select>
                     <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                 </div>
             </div>
 
-            <!-- Post Name Select -->
+            <!-- Operational Police Stations Select -->
             <div class="space-y-2">
-                <label class="text-[11px] font-semibold text-slate-300">Operational Unit / Post</label>
+                <label class="text-[11px] font-semibold text-slate-300 font-mono">Operational Police Stations</label>
                 <div class="relative">
-                    <select id="postSelect" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-3 text-sm text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
-                        <option value="" disabled selected>Select Unit...</option>
+                    <select id="postSelect" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-3 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <option value="" disabled selected>Select Police Station...</option>
                         <option value="all">All Police Stations</option>
                         <option value="riaz-abad">Riaz Abad</option>
                         <option value="khan-pur">Khan Pur</option>
@@ -163,11 +162,11 @@
 
             <hr class="border-cyan-500/10 my-1">
 
-            <!-- Action Buttons -->
+            <!-- MODULES -->
             <div class="space-y-3">
-                <label class="font-cyber text-[10px] font-bold uppercase tracking-widest text-cyan-400 block mb-1">Modules</label>
+                <label class="font-cyber text-[10px] font-bold uppercase tracking-widest text-cyan-400 block mb-1">MODULES</label>
                 
-                <button onclick="triggerFIRs()" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                <button onclick="triggerFIRs()" class="cyber-btn w-full p-3.5 rounded-xl flex items-center justify-between group">
                     <div class="flex items-center space-x-3">
                         <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-sm">
                             <i class="fa-solid fa-shield-halved"></i>
@@ -179,7 +178,7 @@
                     <i class="fa-solid fa-arrow-right text-[10px] text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="triggerOtherModule('Heinous Crime', 'purple')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                <button onclick="triggerOtherModule('Heinous Crime')" class="cyber-btn w-full p-3.5 rounded-xl flex items-center justify-between group">
                     <div class="flex items-center space-x-3">
                         <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-sm">
                             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -191,7 +190,7 @@
                     <i class="fa-solid fa-arrow-right text-[10px] text-purple-400 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="triggerOtherModule('E-Challans', 'amber')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                <button onclick="triggerOtherModule('E-Challans')" class="cyber-btn w-full p-3.5 rounded-xl flex items-center justify-between group">
                     <div class="flex items-center space-x-3">
                         <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-sm">
                             <i class="fa-solid fa-ticket"></i>
@@ -203,7 +202,7 @@
                     <i class="fa-solid fa-arrow-right text-[10px] text-amber-400 group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
-                <button onclick="triggerOtherModule('PHP Center', 'emerald')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                <button onclick="triggerOtherModule('PHP Center')" class="cyber-btn w-full p-3.5 rounded-xl flex items-center justify-between group">
                     <div class="flex items-center space-x-3">
                         <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-sm">
                             <i class="fa-solid fa-shield-dog"></i>
@@ -217,26 +216,26 @@
             </div>
         </section>
 
-        <!-- Right Viewport Area (Col-9 - Wide) -->
-        <section class="lg:col-span-9 cyber-card rounded-3xl p-6 lg:p-8 flex flex-col min-h-[700px]">
+        <!-- Right Workspace Area (Col-8) -->
+        <section class="lg:col-span-8 cyber-card rounded-3xl p-6 lg:p-8 flex flex-col min-h-[700px]">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-cyan-500/20 gap-4">
                 <div>
                     <h3 id="displayTitle" class="font-cyber text-xl font-bold text-white tracking-wide">SYSTEM STANDBY</h3>
-                    <p id="displaySubtitle" class="text-xs text-cyan-300/70 mt-1 font-mono">Waiting for user command inputs...</p>
+                    <p id="displaySubtitle" class="text-xs text-cyan-300/70 mt-1 font-mono">Select parameters from Command Hub and click a module...</p>
                 </div>
                 <button onclick="exportReport()" class="px-4 py-2 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 transition flex items-center gap-2 font-mono">
                     <i class="fa-solid fa-file-export text-cyan-400"></i> EXPORT REPORT
                 </button>
             </div>
 
-            <!-- Dynamic Workspace Screen -->
+            <!-- Workspace Viewport -->
             <div id="workspaceContent" class="flex-1 flex flex-col items-center justify-center p-8 text-center my-auto">
                 <div class="w-24 h-24 rounded-3xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-3xl mb-4 shadow-lg shadow-cyan-500/10 animate-pulse">
                     <i class="fa-solid fa-satellite-dish"></i>
                 </div>
-                <h4 class="font-cyber text-white font-bold text-base tracking-wider">GRID READY</h4>
+                <h4 class="font-cyber text-white font-bold text-base tracking-wider">COMMAND HUB READY</h4>
                 <p class="text-slate-400 text-xs max-w-sm mt-2 leading-relaxed">
-                    Select a temporal period, operational unit, and click "Detail of FIRs" to load colorful 3D sub-head analytics[cite: 1].
+                    Choose Timeline (2004–2026), select a Police Station, and click "Detail of FIRs" to load analytics.
                 </p>
             </div>
         </section>
@@ -251,7 +250,7 @@
             document.getElementById('liveClock').innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
         }, 1000);
 
-        // Populate Months (2004-2026)
+        // Populate Months & Years (2004-2026)
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const monthSelect = document.getElementById('monthSelect');
         for (let y = 2004; y <= 2026; y++) {
@@ -263,7 +262,6 @@
             }
         }
 
-        // FIRs Sub-heads List provided by user
         const firSubHeads = [
             "Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", 
             "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", 
@@ -274,20 +272,19 @@
             "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total"
         ];
 
-        // Trigger FIRs 3D Colorful Boxes View
         function triggerFIRs() {
             const month = monthSelect.value;
             const post = document.getElementById('postSelect').value;
 
             if(!month || !post) {
-                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
+                alert("⚠️ Please select Temporal Matrix and Operational Police Station first!");
                 return;
             }
 
             document.getElementById('displayTitle').innerText = `Detail of FIRs :: Telemetry Grid`;
-            document.getElementById('displaySubtitle').innerText = `Unit: ${post} // Timeline: ${month}`;
+            document.getElementById('displaySubtitle').innerText = `Station: ${post.toUpperCase()} // Timeline: ${month}`;
 
-            let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[600px] overflow-y-auto pr-2">`;
+            let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[550px] overflow-y-auto pr-2">`;
             
             firSubHeads.forEach((head, index) => {
                 let randomVal = head === "Total" ? "342" : Math.floor(Math.random() * 25) + 1;
@@ -317,7 +314,7 @@
             document.getElementById('workspaceContent').innerHTML = `
                 <div class="w-full flex flex-col gap-4">
                     <div class="flex justify-between items-center bg-slate-950/60 p-3 rounded-xl border border-cyan-500/20 font-mono">
-                        <span class="text-xs text-cyan-400 font-bold uppercase"><i class="fa-solid fa-cubes mr-2"></i> 3D Matrix Loaded (${firSubHeads.length} Sub-Heads)</span>
+                        <span class="text-xs text-cyan-400 font-bold uppercase"><i class="fa-solid fa-cubes mr-2"></i> 3D Sub-Head Matrix Loaded (${firSubHeads.length} Heads)</span>
                         <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30">Live Sync</span>
                     </div>
                     ${cardsHTML}
@@ -325,17 +322,17 @@
             `;
         }
 
-        function triggerOtherModule(moduleName, colorTheme) {
+        function triggerOtherModule(moduleName) {
             const month = monthSelect.value;
             const post = document.getElementById('postSelect').value;
 
             if(!month || !post) {
-                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
+                alert("⚠️ Please select Temporal Matrix and Operational Police Station first!");
                 return;
             }
 
             document.getElementById('displayTitle').innerText = `${moduleName} :: Telemetry Grid`;
-            document.getElementById('displaySubtitle').innerText = `Unit: ${post} // Timeline: ${month}`;
+            document.getElementById('displaySubtitle').innerText = `Station: ${post.toUpperCase()} // Timeline: ${month}`;
 
             document.getElementById('workspaceContent').innerHTML = `
                 <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 text-left">
