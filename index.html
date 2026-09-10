@@ -88,9 +88,48 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.5); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 4px; }
+
+        /* Cinematic Intro Animation Overlay */
+        #introScreen {
+            position: fixed;
+            inset: 0;
+            background: #050B14;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+        }
+        .fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
     </style>
 </head>
 <body class="bg-cyberDark text-slate-100 min-h-screen flex flex-col grid-bg relative overflow-x-hidden">
+
+    <!-- Cinematic Netflix/Command Center Intro Screen -->
+    <div id="introScreen">
+        <div class="absolute inset-0 grid-bg pointer-events-none opacity-40"></div>
+        <div class="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+        
+        <div class="relative z-10 text-center px-4 space-y-6 max-w-4xl mx-auto animate-pulse">
+            <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px] shadow-[0_0_30px_rgba(0,240,255,0.4)]">
+                <div class="w-full h-full bg-cyberDark rounded-[14px] flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-cyan-400 text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="font-cyber text-2xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
+                Welcome to Muzaffargarh Nexus <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Performance Board</span>
+            </h1>
+            <p class="text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase">Initializing Secure Autonomous District Grid...</p>
+            <div class="w-48 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden relative">
+                <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[2000ms] ease-out"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Ambient Glowing Orbs -->
     <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -130,7 +169,7 @@
         <!-- Top Horizontal Filter Bar -->
         <section class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
             
-            <!-- Left: SELECT POLICE UNIT (Center aligned heading & text) -->
+            <!-- Left: SELECT POLICE UNIT -->
             <div class="w-full xl:w-80 space-y-1.5">
                 <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">SELECT POLICE UNIT</label>
                 <div class="relative">
@@ -363,6 +402,18 @@
     <!-- JavaScript Controller -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Cinematic Intro Splash Animation Trigger
+            const loader = document.getElementById('introLoader');
+            if(loader) {
+                setTimeout(() => { loader.style.width = '100%'; }, 100);
+            }
+            setTimeout(() => {
+                const intro = document.getElementById('introScreen');
+                if(intro) {
+                    intro.classList.add('fade-out');
+                }
+            }, 2000);
+
             // Live Clock
             setInterval(() => {
                 const d = new Date();
