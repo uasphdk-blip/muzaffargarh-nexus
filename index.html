@@ -89,7 +89,7 @@
         .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.5); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 4px; }
 
-        /* Cinematic Intro Animation Overlay */
+        /* Cinematic Intro Animation Overlay (9 Seconds) */
         #introScreen {
             position: fixed;
             inset: 0;
@@ -109,7 +109,7 @@
 </head>
 <body class="bg-cyberDark text-slate-100 min-h-screen flex flex-col grid-bg relative overflow-x-hidden">
 
-    <!-- Cinematic Netflix/Command Center Intro Screen -->
+    <!-- Cinematic 9-Second Intro Screen -->
     <div id="introScreen">
         <div class="absolute inset-0 grid-bg pointer-events-none opacity-40"></div>
         <div class="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
@@ -126,7 +126,8 @@
             </h1>
             <p class="text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase">Initializing Secure Autonomous District Grid...</p>
             <div class="w-48 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden relative">
-                <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[2000ms] ease-out"></div>
+                <!-- 9 seconds smooth transition for loading bar -->
+                <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[9000ms] ease-out"></div>
             </div>
         </div>
     </div>
@@ -384,7 +385,7 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Workspace Screen -->
+                <!-- Dynamic Workspace Screen (Initially Clean / Standby) -->
                 <div id="workspaceContent" class="flex-1 flex flex-col items-center justify-center p-8 text-center my-auto">
                     <div class="w-24 h-24 rounded-3xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-3xl mb-4 shadow-lg shadow-cyan-500/10 animate-pulse">
                         <i class="fa-solid fa-chart-pie"></i>
@@ -402,7 +403,7 @@
     <!-- JavaScript Controller -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Cinematic Intro Splash Animation Trigger
+            // Cinematic 9-Second Intro Splash Animation Trigger
             const loader = document.getElementById('introLoader');
             if(loader) {
                 setTimeout(() => { loader.style.width = '100%'; }, 100);
@@ -412,7 +413,7 @@
                 if(intro) {
                     intro.classList.add('fade-out');
                 }
-            }, 2000);
+            }, 9000); // exactly 9 seconds
 
             // Live Clock
             setInterval(() => {
@@ -433,9 +434,6 @@
                     yearSelect.appendChild(opt);
                 }
             }
-
-            // Automatically load FIR Analysis on load
-            loadModule('FIR Analysis');
         });
 
         const moduleData = {
