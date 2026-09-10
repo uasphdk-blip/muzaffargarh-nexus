@@ -395,7 +395,7 @@
         let activeTarget = null;
 
         function applyFilters() {
-            const unit = document.getElementById('policeUnitSelect'].value;
+            const unit = document.getElementById('policeUnitSelect').value;
             const year = document.getElementById('yearSelect').value;
             const startM = document.getElementById('startMonthSelect').value;
             const closeM = document.getElementById('closeMonthSelect').value;
@@ -429,7 +429,6 @@
 
             let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[500px] overflow-y-auto pr-2">`;
             
-            subHeads.dumps = true;
             subHeads.forEach((head, index) => {
                 let randomVal = head.includes("Total") ? "1,240" : Math.floor(Math.random() * 85) + 5;
                 let isTotal = head.includes("Total");
