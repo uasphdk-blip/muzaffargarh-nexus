@@ -43,15 +43,15 @@
         .neon-glow-blue { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
 
         .cyber-btn {
-            background: linear-gradient(90deg, rgba(0,240,255,0.1) 0%, rgba(157,0,255,0.1) 100%);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: linear-gradient(90deg, rgba(0,240,255,0.08) 0%, rgba(157,0,255,0.08) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.25);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .cyber-btn:hover {
-            background: linear-gradient(90deg, rgba(0,240,255,0.25) 0%, rgba(157,0,255,0.25) 100%);
+            background: linear-gradient(90deg, rgba(0,240,255,0.2) 0%, rgba(157,0,255,0.2) 100%);
             border-color: #00F0FF;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
             transform: translateY(-2px);
         }
 
@@ -212,98 +212,106 @@
         <!-- Lower Split Grid: Left Sidebar with Exact Performance Heads & Right Viewport -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- Left Sidebar - Exact Performance Heads List (Col-3) -->
-            <section class="lg:col-span-3 cyber-card rounded-3xl p-5 flex flex-col gap-4">
+            <!-- Left Sidebar - Exact Performance Heads List matching previous panel style (Col-3) -->
+            <section class="cyber-card rounded-3xl p-5 flex flex-col gap-4 lg:col-span-3">
                 <div class="flex items-center justify-between border-b border-cyan-500/20 pb-3">
                     <h2 class="font-cyber text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line"></i> Performance Heads
+                        <i class="fa-solid fa-shield"></i> PERFORMANCE HEADS
                     </h2>
-                    <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded font-mono border border-cyan-500/30">MODULES</span>
+                    <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded font-mono border border-cyan-500/30">SECURE</span>
                 </div>
 
                 <!-- Scrollable List of ONLY Specified Performance Heads -->
-                <div class="space-y-2.5 custom-scroll max-h-[650px] overflow-y-auto pr-1">
-                    <label class="font-cyber text-[10px] font-bold uppercase tracking-widest text-cyan-400 block mb-1">Select Head</label>
+                <div class="space-y-3 custom-scroll max-h-[650px] overflow-y-auto pr-1">
                     
-                    <button onclick="loadModule('FIR Analysis')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 1. FIR Analysis -->
+                    <button onclick="loadModule('FIR Analysis')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-shield"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors text-left">1. FIR Analysis</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('Accident')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 2. Accident -->
+                    <button onclick="loadModule('Accident')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-car-burst"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-purple-300 transition-colors text-left">2. Accident</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('E-Police App (EPP)')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 3. E-Police App (EPP) -->
+                    <button onclick="loadModule('E-Police App (EPP)')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-mobile-screen"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-amber-300 transition-colors text-left">3. E-Police App (EPP)</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('Help & Other Heads')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 4. Help & Other Heads -->
+                    <button onclick="loadModule('Help & Other Heads')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-circle-info"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors text-left">4. Help & Other Heads</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('Recovery Analysis')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 5. Recovery Analysis -->
+                    <button onclick="loadModule('Recovery Analysis')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-box-archive"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-blue-300 transition-colors text-left">5. Recovery Analysis</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-blue-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-blue-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('Heinous Crime')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 6. Heinous Crime -->
+                    <button onclick="loadModule('Heinous Crime')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-triangle-exclamation"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-rose-300 transition-colors text-left">6. Heinous Crime</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-rose-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-rose-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('E-Challan Analysis')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 7. E-Challan Analysis -->
+                    <button onclick="loadModule('E-Challan Analysis')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-receipt"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-teal-300 transition-colors text-left">7. E-Challan Analysis</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-teal-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-teal-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <button onclick="loadModule('Report Center')" class="cyber-btn w-full p-2.5 rounded-xl flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform text-xs">
+                    <!-- 8. Report Center -->
+                    <button onclick="loadModule('Report Center')" class="cyber-btn w-full p-3 rounded-2xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform text-xs">
                                 <i class="fa-solid fa-file-lines"></i>
                             </div>
                             <span class="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors text-left">8. Report Center</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-[10px] text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
+
                 </div>
             </section>
 
