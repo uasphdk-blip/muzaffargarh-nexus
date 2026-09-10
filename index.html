@@ -14,7 +14,9 @@
                 extend: {
                     colors: {
                         cyberDark: '#050B14',
+                        cyberPanel: '#0B132B',
                         cyberCard: '#0F172A',
+                        cyberNeon: '#00F0FF',
                     },
                     fontFamily: {
                         cyber: ['Orbitron', 'sans-serif'],
@@ -54,24 +56,22 @@
         </div>
         <div class="flex items-center space-x-4">
             <span class="text-xs cyber-font text-cyan-300/80 bg-cyan-950/40 border border-cyan-500/30 px-3 py-1.5 rounded-lg hidden sm:inline-block">District Command Center</span>
-            <span id="live-clock" class="text-xs cyber-font text-slate-300 font-mono">7:22:48 PM</span>
+            <span id="live-clock" class="text-xs cyber-font text-slate-300 font-mono"></span>
         </div>
     </header>
 
     <!-- Main Workspace Container -->
     <main class="flex-1 p-4 md:p-6 max-w-[1700px] w-full mx-auto space-y-6">
         
-        <!-- Top Horizontal Filter Bar (Exact Match to Screenshot) -->
-        <section class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
-            
-            <!-- Filter Fields Container -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+        <!-- Top Horizontal Filter Bar -->
+        <section class="cyber-card rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 w-full lg:w-auto flex-1">
                 
-                <!-- Select Police Unit -->
+                <!-- Select Police Unit (13 Stations + All) -->
                 <div class="space-y-1">
                     <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">SELECT POLICE UNIT</label>
                     <select id="unit-select" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
-                        <option value="all" selected>All Units (District Wide)</option>
+                        <option value="all">All Units (District Wide)</option>
                         <option value="riaz-abad">Riaz Abad</option>
                         <option value="khan-pur">Khan Pur</option>
                         <option value="head-m-wala">Head M. Wala</option>
@@ -88,7 +88,7 @@
                     </select>
                 </div>
 
-                <!-- Year -->
+                <!-- Year (2004 to 2026) -->
                 <div class="space-y-1">
                     <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">YEAR</label>
                     <select id="year-select" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
@@ -159,8 +159,8 @@
             </div>
 
             <!-- Apply Button -->
-            <div class="w-full xl:w-auto flex items-end">
-                <button onclick="applyFilters()" class="w-full xl:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs cyber-font transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 whitespace-nowrap">
+            <div class="w-full lg:w-auto flex items-end">
+                <button onclick="applyFilters()" class="w-full lg:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs cyber-font transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-filter"></i> APPLY
                 </button>
             </div>
@@ -317,9 +317,10 @@
     <script>
         function updateClock() {
             const now = new Date();
-            document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+            document.getElementById('live-clock').innerText = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
         }
         setInterval(updateClock, 1000);
+        updateClock();
 
         function applyFilters() {
             const unit = document.getElementById('unit-select').value;
