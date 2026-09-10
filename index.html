@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MUZAFFARGARH NEXUS - District Command Center</title>
+    <title>District Muzaffargarh - Next-Gen Command Center</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -14,321 +13,361 @@
                 extend: {
                     colors: {
                         cyberDark: '#050B14',
-                        cyberPanel: '#0B132B',
-                        cyberCard: '#0F172A',
+                        cyberPanel: 'rgba(13, 22, 38, 0.75)',
                         cyberNeon: '#00F0FF',
-                    },
-                    fontFamily: {
-                        cyber: ['Orbitron', 'sans-serif'],
-                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                        cyberPurple: '#9D00FF',
                     }
                 }
             }
         }
     </script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #050B14; color: #F8FAFC; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .cyber-font { font-family: 'Orbitron', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        
         .cyber-card {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 100%, rgba(11, 19, 43, 0.9) 0%);
+            background: linear-gradient(135deg, rgba(16, 28, 51, 0.8) 0%, rgba(8, 14, 26, 0.9) 100%);
+            backdrop-filter: blur(30px);
             border: 1px solid rgba(0, 240, 255, 0.15);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0, 240, 255, 0.05);
         }
+        
         .cyber-card:hover {
             border-color: rgba(0, 240, 255, 0.4);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 240, 255, 0.1);
         }
+
+        .neon-glow-blue { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
+
+        .cyber-btn {
+            background: linear-gradient(90deg, rgba(0,240,255,0.1) 0%, rgba(157,0,255,0.1) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cyber-btn:hover {
+            background: linear-gradient(90deg, rgba(0,240,255,0.25) 0%, rgba(157,0,255,0.25) 100%);
+            border-color: #00F0FF;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 3D Colorful Card Effect */
+        .box-3d {
+            background: linear-gradient(145deg, rgba(20, 32, 58, 0.9), rgba(10, 16, 30, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .box-3d:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 15px 35px -5px rgba(0, 240, 255, 0.15), 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+
         .grid-bg {
             background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-image: linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
         }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.5); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 4px; }
     </style>
 </head>
-<body class="bg-cyberDark text-slate-100 min-h-screen flex flex-col grid-bg">
+<body class="bg-cyberDark text-slate-100 min-h-screen flex flex-col grid-bg relative overflow-x-hidden">
 
-    <!-- Top Header Bar -->
-    <header class="flex items-center justify-between px-6 py-4 border-b border-cyan-500/20 bg-cyberDark/80 backdrop-blur sticky top-0 z-50">
-        <div class="flex items-center space-x-3">
-            <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
-            <h1 class="cyber-font text-base md:text-lg font-extrabold tracking-wider text-white">MUZAFFARGARH <span class="text-cyan-400">NEXUS</span></h1>
-        </div>
+    <!-- Ambient Glowing Orbs -->
+    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Top Header -->
+    <header class="cyber-card border-b border-cyan-500/20 sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-4">
-            <span class="text-xs cyber-font text-cyan-300/80 bg-cyan-950/40 border border-cyan-500/30 px-3 py-1.5 rounded-lg hidden sm:inline-block">District Command Center</span>
-            <span id="live-clock" class="text-xs cyber-font text-slate-300 font-mono"></span>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px] shadow-lg shadow-cyan-500/30">
+                <div class="w-full h-full bg-cyberDark rounded-[10px] flex items-center justify-center">
+                    <i class="fa-solid fa-microchip text-cyan-400 text-xl animate-pulse"></i>
+                </div>
+            </div>
+            <div>
+                <h1 class="font-cyber font-extrabold text-lg tracking-wider text-white neon-glow-blue">
+                    MUZAFFARGARH <span class="text-cyan-400">NEXUS</span>
+                </h1>
+                <p class="text-[10px] text-cyan-300/70 tracking-widest uppercase font-mono">Autonomous District Grid v5.0</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="hidden md:flex items-center space-x-2 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300 font-mono">
+                <i class="fa-regular fa-clock text-cyan-400"></i>
+                <span id="liveClock"></span>
+            </div>
+            <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>SYSTEM SYNCED</span>
+            </div>
         </div>
     </header>
 
-    <!-- Main Workspace Container -->
-    <main class="flex-1 p-4 md:p-6 max-w-[1700px] w-full mx-auto space-y-6">
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 lg:p-8 max-w-[1800px] w-full mx-auto flex flex-col gap-6">
         
         <!-- Top Horizontal Filter Bar -->
-        <section class="cyber-card rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-center justify-between gap-4">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 w-full lg:w-auto flex-1">
+        <section class="cyber-card rounded-2xl p-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-3/4">
                 
-                <!-- Select Police Unit (13 Stations + All) -->
+                <!-- Month & Year Select -->
                 <div class="space-y-1">
-                    <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">SELECT POLICE UNIT</label>
-                    <select id="unit-select" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
-                        <option value="all">All Units (District Wide)</option>
-                        <option value="riaz-abad">Riaz Abad</option>
-                        <option value="khan-pur">Khan Pur</option>
-                        <option value="head-m-wala">Head M. Wala</option>
-                        <option value="jeewana-bangla">Jeewana Bangla</option>
-                        <option value="ghazi-ghat">Ghazi Ghat</option>
-                        <option value="head-bakaini">Head Bakaini</option>
-                        <option value="head-punjnad">Head Punjnad</option>
-                        <option value="hamzay-wali">Hamzay Wali</option>
-                        <option value="meer-haji">Meer Haji</option>
-                        <option value="khander-meerani">Khander Meerani</option>
-                        <option value="gabbar-arain">Gabbar Arain</option>
-                        <option value="head-tounsa">Head Tounsa</option>
-                        <option value="langar-wah">Langar Wah</option>
-                    </select>
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">TEMPORAL MATRIX (MONTH/YEAR)</label>
+                    <div class="relative">
+                        <select id="monthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                            <option value="" disabled selected>Select Timeline...</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
                 </div>
 
-                <!-- Year (2004 to 2026) -->
+                <!-- Operational Unit / Post Select -->
                 <div class="space-y-1">
-                    <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">YEAR</label>
-                    <select id="year-select" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
-                        <option value="2026" selected>2026</option>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
-                        <option value="2020">2020</option>
-                        <option value="2019">2019</option>
-                        <option value="2018">2018</option>
-                        <option value="2017">2017</option>
-                        <option value="2016">2016</option>
-                        <option value="2015">2015</option>
-                        <option value="2014">2014</option>
-                        <option value="2013">2013</option>
-                        <option value="2012">2012</option>
-                        <option value="2011">2011</option>
-                        <option value="2010">2010</option>
-                        <option value="2009">2009</option>
-                        <option value="2008">2008</option>
-                        <option value="2007">2007</option>
-                        <option value="2006">2006</option>
-                        <option value="2005">2005</option>
-                        <option value="2004">2004</option>
-                    </select>
-                </div>
-
-                <!-- Start Month -->
-                <div class="space-y-1">
-                    <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">START MONTH</label>
-                    <select id="start-month" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
-                        <option value="January" selected>January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                </div>
-
-                <!-- Close Month -->
-                <div class="space-y-1">
-                    <label class="block text-[10px] cyber-font text-cyan-400 font-semibold tracking-wider">CLOSE MONTH</label>
-                    <select id="close-month" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono">
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December" selected>December</option>
-                    </select>
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">OPERATIONAL UNIT / POST</label>
+                    <div class="relative">
+                        <select id="postSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                            <option value="" disabled selected>Select Unit...</option>
+                            <option value="all" selected>All Units (District Wide)</option>
+                            <option>Riaz Abad</option>
+                            <option>Khan Pur</option>
+                            <option>Head M. Wala</option>
+                            <option>Jeewana Bangla</option>
+                            <option>Ghazi Ghat</option>
+                            <option>Head Bakaini</option>
+                            <option>Head Punjnad</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
                 </div>
 
             </div>
 
-            <!-- Apply Button -->
+            <!-- Apply / Quick Status -->
             <div class="w-full lg:w-auto flex items-end">
-                <button onclick="applyFilters()" class="w-full lg:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs cyber-font transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-filter"></i> APPLY
-                </button>
+                <div class="w-full lg:w-auto bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 font-mono px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> FILTER MATRIX READY
+                </div>
             </div>
         </section>
 
-        <!-- 8 Core Modules Dashboard Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Lower Split Grid: Left Sidebar Headings & Right Viewport -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- 01. FIR MODULE -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">01. FIR MODULE</span>
-                        <i class="fa-solid fa-shield-halved text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">1,245</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Total Registered:</span> <span class="text-white">1,245</span></div>
-                        <div class="flex justify-between"><span>Investigation:</span> <span class="text-amber-400">310</span></div>
-                        <div class="flex justify-between"><span>Challaned:</span> <span class="text-emerald-400">935</span></div>
-                    </div>
+            <!-- Left Sidebar Controls / Headings (Col-3) -->
+            <section class="lg:col-span-3 cyber-card rounded-3xl p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-cyan-500/20 pb-3">
+                    <h2 class="font-cyber text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-terminal"></i> Command Hub
+                    </h2>
+                    <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded font-mono border border-cyan-500/30">SECURE</span>
                 </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Real-time CMS sync</div>
-            </div>
 
-            <!-- 02. ACCIDENTS -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">02. ACCIDENTS</span>
-                        <i class="fa-solid fa-car-burst text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">142</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Fatal:</span> <span class="text-rose-400">28</span></div>
-                        <div class="flex justify-between"><span>Non-Fatal:</span> <span class="text-amber-400">114</span></div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Traffic Engineering Unit</div>
-            </div>
+                <!-- Action Buttons / Headings -->
+                <div class="space-y-3">
+                    <label class="font-cyber text-[10px] font-bold uppercase tracking-widest text-cyan-400 block mb-1">Modules</label>
+                    
+                    <button onclick="triggerFIRs()" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="block text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">Detail of FIRs</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-[10px] text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
 
-            <!-- 03. EPP / PATROL -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">03. EPP / PATROL</span>
-                        <i class="fa-solid fa-shield text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">850</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Checkpoints:</span> <span class="text-white">45</span></div>
-                        <div class="flex justify-between"><span>Active Beats:</span> <span class="text-emerald-400">850</span></div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Effective Policing Plan</div>
-            </div>
+                    <button onclick="triggerOtherModule('Heinous Crime', 'purple')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="block text-xs font-bold text-white group-hover:text-purple-300 transition-colors">Heinous Crime</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-[10px] text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
 
-            <!-- 04. HELPS / 15 CALLS -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">04. HELPS / 15 CALLS</span>
-                        <i class="fa-solid fa-headset text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">3,490</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Attended:</span> <span class="text-emerald-400">3,420</span></div>
-                        <div class="flex justify-between"><span>False / Drops:</span> <span class="text-slate-400">70</span></div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Emergency Response</div>
-            </div>
+                    <button onclick="triggerOtherModule('E-Challans', 'amber')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-ticket"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="block text-xs font-bold text-white group-hover:text-amber-300 transition-colors">E-Challans</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-[10px] text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
 
-            <!-- 05. RECOVERY -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">05. RECOVERY</span>
-                        <i class="fa-solid fa-sack-dollar text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-2xl font-extrabold text-white">PKR 45.2M</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Stolen Vehicles:</span> <span class="text-white">18</span></div>
-                    </div>
+                    <button onclick="triggerOtherModule('PHP Center', 'emerald')" class="cyber-btn w-full p-3 rounded-xl flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-shield-dog"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="block text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">PHP Center</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-[10px] text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
                 </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Asset Recovery Cell</div>
-            </div>
+            </section>
 
-            <!-- 06. HEINOUS CRIME -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">06. HEINOUS CRIME</span>
-                        <i class="fa-solid fa-triangle-exclamation text-slate-500 text-sm"></i>
+            <!-- Right Viewport Area (Col-9 - Wide) -->
+            <section class="lg:col-span-9 cyber-card rounded-3xl p-6 lg:p-8 flex flex-col min-h-[600px]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-cyan-500/20 gap-4">
+                    <div>
+                        <h3 id="displayTitle" class="font-cyber text-xl font-bold text-white tracking-wide">SYSTEM STANDBY</h3>
+                        <p id="displaySubtitle" class="text-xs text-cyan-300/70 mt-1 font-mono">Waiting for user command inputs...</p>
                     </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">12</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Total Cases:</span> <span class="text-white">12</span></div>
-                    </div>
+                    <button onclick="exportReport()" class="px-4 py-2 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 transition flex items-center gap-2 font-mono">
+                        <i class="fa-solid fa-file-export text-cyan-400"></i> EXPORT REPORT
+                    </button>
                 </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">High Priority Tracking</div>
-            </div>
 
-            <!-- 07. E-CHALLAN -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">07. E-CHALLAN</span>
-                        <i class="fa-solid fa-receipt text-slate-500 text-sm"></i>
+                <!-- Dynamic Workspace Screen -->
+                <div id="workspaceContent" class="flex-1 flex flex-col items-center justify-center p-8 text-center my-auto">
+                    <div class="w-24 h-24 rounded-3xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-3xl mb-4 shadow-lg shadow-cyan-500/10 animate-pulse">
+                        <i class="fa-solid fa-satellite-dish"></i>
                     </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">14,820</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>Issued:</span> <span class="text-white">14,820</span></div>
-                    </div>
+                    <h4 class="font-cyber text-white font-bold text-base tracking-wider">GRID READY</h4>
+                    <p class="text-slate-400 text-xs max-w-sm mt-2 leading-relaxed">
+                        Select a temporal period and operational unit from the top bar, then click a module on the left sidebar to load analytics.
+                    </p>
                 </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Automated Telemetry</div>
-            </div>
-
-            <!-- 08. REPORTING CENTER -->
-            <div class="cyber-card rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                        <span class="cyber-font text-xs font-bold text-cyan-400">08. REPORTING CENTER</span>
-                        <i class="fa-solid fa-building-shield text-slate-500 text-sm"></i>
-                    </div>
-                    <div class="my-2">
-                        <h2 class="cyber-font text-3xl font-extrabold text-white">5,630</h2>
-                    </div>
-                    <div class="space-y-1.5 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/60">
-                        <div class="flex justify-between"><span>PKM Services:</span> <span class="text-emerald-400">4,200</span></div>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 font-mono mt-6 pt-2 border-t border-slate-900">Public Facilitation Index</div>
-            </div>
+            </section>
 
         </div>
     </main>
 
-    <!-- Script Engine -->
+    <!-- JavaScript Controller -->
     <script>
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('live-clock').innerText = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+        // Live Clock
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('liveClock').innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+        }, 1000);
 
-        function applyFilters() {
-            const unit = document.getElementById('unit-select').value;
-            const year = document.getElementById('year-select').value;
-            const startM = document.getElementById('start-month').value;
-            const closeM = document.getElementById('close-month').value;
+        // Populate Months (2016-2026)
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const monthSelect = document.getElementById('monthSelect');
+        for (let y = 2016; y <= 2026; y++) {
+            for (let m = 0; m < months.length; m++) {
+                let opt = document.createElement('option');
+                opt.value = `${months[m]}-${y}`;
+                opt.text = `${months[m]} ${y}`;
+                if(y === 2026 && months[m] === "December") opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+        }
+
+        // FIRs Sub-heads List
+        const firSubHeads = [
+            "Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", 
+            "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", 
+            "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", 
+            "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", 
+            "322/337G/427/279 PPC", "216A PPC", "170 PPC", "25D Telegraphy act", 
+            "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", 
+            "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total"
+        ];
+
+        // Trigger FIRs 3D Colorful Boxes View
+        function triggerFIRs() {
+            const month = monthSelect.value;
+            const post = document.getElementById('postSelect').value;
+
+            if(!month || !post) {
+                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
+                return;
+            }
+
+            document.getElementById('displayTitle').innerText = `Detail of FIRs :: Telemetry Grid`;
+            document.getElementById('displaySubtitle').innerText = `Unit: ${post.toUpperCase()} // Timeline: ${month}`;
+
+            let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[500px] overflow-y-auto pr-2">`;
             
-            alert(`Filters applied successfully!\nUnit: ${unit.toUpperCase()}\nYear: ${year}\nPeriod: ${startM} to ${closeM}`);
+            firSubHeads.forEach((head, index) => {
+                let randomVal = head === "Total" ? "342" : Math.floor(Math.random() * 25) + 1;
+                let isTotal = head === "Total";
+                
+                let borderColor = isTotal ? "border-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.3)]" : "border-white/10";
+                let textColor = isTotal ? "text-cyan-300 font-extrabold" : "text-white";
+                let badgeColor = isTotal ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-blue-500/10 text-blue-400 border-blue-500/20";
+
+                cardsHTML += `
+                    <div class="box-3d p-4 rounded-2xl relative overflow-hidden ${borderColor}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}">FIR-${index+1}</span>
+                            <i class="fa-solid fa-chart-pie text-slate-600 text-xs"></i>
+                        </div>
+                        <h5 class="text-xs font-semibold text-slate-400 tracking-wide line-clamp-1">${head}</h5>
+                        <div class="flex items-baseline justify-between mt-2">
+                            <h4 class="font-cyber text-2xl ${textColor}">${randomVal}</h4>
+                            <span class="text-[9px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-up"></i> Active</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cardsHTML += `</div>`;
+
+            document.getElementById('workspaceContent').innerHTML = `
+                <div class="w-full flex flex-col gap-4">
+                    <div class="flex justify-between items-center bg-slate-950/60 p-3 rounded-xl border border-cyan-500/20 font-mono">
+                        <span class="text-xs text-cyan-400 font-bold uppercase"><i class="fa-solid fa-cubes mr-2"></i> 3D Matrix Loaded (${firSubHeads.length} Sub-Heads)</span>
+                        <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30">Live Sync</span>
+                    </div>
+                    ${cardsHTML}
+                </div>
+            `;
+        }
+
+        function triggerOtherModule(moduleName, colorTheme) {
+            const month = monthSelect.value;
+            const post = document.getElementById('postSelect').value;
+
+            if(!month || !post) {
+                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
+                return;
+            }
+
+            document.getElementById('displayTitle').innerText = `${moduleName} :: Telemetry Grid`;
+            document.getElementById('displaySubtitle').innerText = `Unit: ${post.toUpperCase()} // Timeline: ${month}`;
+
+            document.getElementById('workspaceContent').innerHTML = `
+                <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 text-left">
+                    <div class="box-3d p-6 rounded-2xl">
+                        <span class="text-xs font-mono text-cyan-400">TOTAL METRIC</span>
+                        <h4 class="font-cyber text-4xl font-extrabold text-white mt-2">128</h4>
+                    </div>
+                    <div class="box-3d p-6 rounded-2xl">
+                        <span class="text-xs font-mono text-purple-400">PROCESSED CASES</span>
+                        <h4 class="font-cyber text-4xl font-extrabold text-white mt-2">115</h4>
+                    </div>
+                    <div class="box-3d p-6 rounded-2xl">
+                        <span class="text-xs font-mono text-amber-400">PENDING QUEUE</span>
+                        <h4 class="font-cyber text-4xl font-extrabold text-white mt-2">13</h4>
+                    </div>
+                </div>
+            `;
+        }
+
+        function exportReport() {
+            alert("📥 Telemetry data export sequence initiated successfully!");
         }
     </script>
 </body>
