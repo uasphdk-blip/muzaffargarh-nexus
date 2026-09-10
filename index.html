@@ -52,17 +52,17 @@
             background: linear-gradient(90deg, rgba(0,240,255,0.2) 0%, rgba(157,0,255,0.2) 100%);
             border-color: #00F0FF;
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02); /* Added zoom-in effect */
         }
 
         .box-3d {
             background: linear-gradient(145deg, rgba(20, 32, 58, 0.9), rgba(10, 16, 30, 0.95));
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.05);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .box-3d:hover {
-            transform: translateY(-4px);
+            transform: translateY(-4px) scale(1.03); /* Added smooth zoom-in effect for sub-heading cards */
             border-color: rgba(0, 240, 255, 0.4);
             box-shadow: 0 15px 35px -5px rgba(0, 240, 255, 0.15), 0 0 20px rgba(0, 240, 255, 0.2);
         }
