@@ -130,49 +130,51 @@
         
         <!-- Top Horizontal Filter Bar -->
         <section class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                
-                <!-- SELECT POLICE UNIT -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">SELECT POLICE UNIT</label>
-                    <div class="relative">
-                        <select id="policeUnitSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
-                            <option value="All Units (District Wide)" selected>All Units (District Wide)</option>
-                            <option value="Riaz Abad">Riaz Abad</option>
-                            <option value="Khan Pur">Khan Pur</option>
-                            <option value="Head M. Wala">Head M. Wala</option>
-                            <option value="Jeewana Bangla">Jeewana Bangla</option>
-                            <option value="Ghazi Ghat">Ghazi Ghat</option>
-                            <option value="Head Bakaini">Head Bakaini</option>
-                            <option value="Head Punjnad">Head Punjnad</option>
-                            <option value="Hamzay Wali">Hamzay Wali</option>
-                            <option value="Meer Haji">Meer Haji</option>
-                            <option value="Khander">Khander</option>
-                            <option value="Meerani">Meerani</option>
-                            <option value="Gabbar Arain">Gabbar Arain</option>
-                            <option value="Head Tounsa">Head Tounsa</option>
-                            <option value="Langar Wah">Langar Wah</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
-                    </div>
+            
+            <!-- Left: SELECT POLICE UNIT (Untouched) -->
+            <div class="w-full xl:w-80 space-y-1.5">
+                <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">SELECT POLICE UNIT</label>
+                <div class="relative">
+                    <select id="policeUnitSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <option value="All Units (District Wide)" selected>All Units (District Wide)</option>
+                        <option value="Riaz Abad">Riaz Abad</option>
+                        <option value="Khan Pur">Khan Pur</option>
+                        <option value="Head M. Wala">Head M. Wala</option>
+                        <option value="Jeewana Bangla">Jeewana Bangla</option>
+                        <option value="Ghazi Ghat">Ghazi Ghat</option>
+                        <option value="Head Bakaini">Head Bakaini</option>
+                        <option value="Head Punjnad">Head Punjnad</option>
+                        <option value="Hamzay Wali">Hamzay Wali</option>
+                        <option value="Meer Haji">Meer Haji</option>
+                        <option value="Khander">Khander</option>
+                        <option value="Meerani">Meerani</option>
+                        <option value="Gabbar Arain">Gabbar Arain</option>
+                        <option value="Head Tounsa">Head Tounsa</option>
+                        <option value="Langar Wah">Langar Wah</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                 </div>
+            </div>
 
+            <!-- Right: Year, Start Month, Close Month & APPLY Button -->
+            <div class="flex flex-wrap xl:flex-nowrap items-end gap-3 w-full xl:w-auto justify-end">
+                
                 <!-- YEAR -->
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 w-28">
                     <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">YEAR</label>
                     <div class="relative">
-                        <select id="yearSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <select id="yearSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
                             <!-- Populated via JS -->
                         </select>
-                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                     </div>
                 </div>
 
                 <!-- START MONTH -->
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 w-32">
                     <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">START MONTH</label>
                     <div class="relative">
-                        <select id="startMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <select id="startMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
                             <option value="January" selected>January</option>
                             <option value="February">February</option>
                             <option value="March">March</option>
@@ -186,15 +188,15 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                     </div>
                 </div>
 
                 <!-- CLOSE MONTH -->
-                <div class="space-y-1.5">
+                <div class="space-y-1.5 w-32">
                     <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider">CLOSE MONTH</label>
                     <div class="relative">
-                        <select id="closeMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <select id="closeMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
                             <option value="January">January</option>
                             <option value="February">February</option>
                             <option value="March">March</option>
@@ -208,21 +210,19 @@
                             <option value="November">November</option>
                             <option value="December" selected>December</option>
                         </select>
-                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                     </div>
                 </div>
 
-            </div>
-
-            <!-- APPLY Button -->
-            <div class="w-full xl:w-auto flex items-end pt-2 xl:pt-0">
-                <button onclick="applyFilters()" class="w-full xl:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 font-cyber shadow-lg shadow-emerald-600/30 cursor-pointer">
+                <!-- APPLY Button -->
+                <button onclick="applyFilters()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 font-cyber shadow-lg shadow-emerald-600/30 cursor-pointer h-[38px]">
                     <i class="fa-solid fa-filter"></i> APPLY
                 </button>
+
             </div>
         </section>
 
-        <!-- Lower Split Grid: Left Sidebar with Exact Performance Heads & Right Viewport -->
+        <!-- Lower Split Grid: Left Sidebar with Performance Heads & Right Viewport -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             <!-- Left Sidebar - Performance Heads List -->
@@ -374,7 +374,7 @@
             // Populate Years (2016-2026)
             const yearSelect = document.getElementById('yearSelect');
             if(yearSelect) {
-                yearSelect.innerHTML = ''; // Clear existing if any
+                yearSelect.innerHTML = ''; 
                 for (let y = 2016; y <= 2026; y++) {
                     let opt = document.createElement('option');
                     opt.value = y;
@@ -384,7 +384,7 @@
                 }
             }
 
-            // Automatically load FIR Analysis on load so slides are instantly visible
+            // Automatically load FIR Analysis on load
             loadModule('FIR Analysis');
         });
 
@@ -431,7 +431,7 @@
             const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
             if(paramBoxContainer) {
                 paramBoxContainer.innerHTML = `
-                    <div class="px-5 py-2.5 bg-cyan-950/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+                    <div class="px-5 py-2.5 bg-cyan-950/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.15)] h-[38px]">
                         <i class="fa-solid fa-layer-group text-cyan-400 text-sm"></i>
                         <span>(${subHeads.length} Parameters Loaded)</span>
                     </div>
