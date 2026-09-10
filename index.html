@@ -138,10 +138,10 @@
 
             <!-- Post Name Select -->
             <div class="space-y-2">
-                <label class="text-[11px] font-semibold text-slate-300">Operational Police Stations</label>
+                <label class="text-[11px] font-semibold text-slate-300">Operational Unit / Post</label>
                 <div class="relative">
                     <select id="postSelect" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-3 text-sm text-cyan-200 focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
-                        <option value="" disabled selected>Select Police Station...</option>
+                        <option value="" disabled selected>Select Unit...</option>
                         <option value="all">All Police Stations</option>
                         <option value="riaz-abad">Riaz Abad</option>
                         <option value="khan-pur">Khan Pur</option>
@@ -236,7 +236,7 @@
                 </div>
                 <h4 class="font-cyber text-white font-bold text-base tracking-wider">GRID READY</h4>
                 <p class="text-slate-400 text-xs max-w-sm mt-2 leading-relaxed">
-                    Select a temporal period, police station, and click "Detail of FIRs" to load colorful 3D sub-head analytics.
+                    Select a temporal period, operational unit, and click "Detail of FIRs" to load colorful 3D sub-head analytics[cite: 1].
                 </p>
             </div>
         </section>
@@ -263,7 +263,7 @@
             }
         }
 
-        // FIRs Sub-heads List
+        // FIRs Sub-heads List provided by user
         const firSubHeads = [
             "Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", 
             "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", 
@@ -280,12 +280,12 @@
             const post = document.getElementById('postSelect').value;
 
             if(!month || !post) {
-                alert("⚠️ Error: Please select both Temporal Period and Police Station first!");
+                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
                 return;
             }
 
             document.getElementById('displayTitle').innerText = `Detail of FIRs :: Telemetry Grid`;
-            document.getElementById('displaySubtitle').innerText = `Station: ${post} // Timeline: ${month}`;
+            document.getElementById('displaySubtitle').innerText = `Unit: ${post} // Timeline: ${month}`;
 
             let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[600px] overflow-y-auto pr-2">`;
             
@@ -330,12 +330,12 @@
             const post = document.getElementById('postSelect').value;
 
             if(!month || !post) {
-                alert("⚠️ Error: Please select both Temporal Period and Police Station first!");
+                alert("⚠️ Error: Please select both Temporal Period and Operational Unit first!");
                 return;
             }
 
             document.getElementById('displayTitle').innerText = `${moduleName} :: Telemetry Grid`;
-            document.getElementById('displaySubtitle').innerText = `Station: ${post} // Timeline: ${month}`;
+            document.getElementById('displaySubtitle').innerText = `Unit: ${post} // Timeline: ${month}`;
 
             document.getElementById('workspaceContent').innerHTML = `
                 <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 text-left">
