@@ -1,242 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safe City & Police Performance Analytics Dashboard</title>
-    <!-- Tailwind CSS CDN -->
+    <title>District Muzaffargarh - Command Center</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyberDark: '#050B14',
+                        cyberPanel: 'rgba(13, 22, 38, 0.75)',
+                        cyberNeon: '#00F0FF',
+                        cyberPurple: '#9D00FF',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .font-php { font-family: 'Cinzel', serif; letter-spacing: 0.12em; }
         
-        body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: #030712;
-            color: #f3f4f6;
-        }
-        .font-cyber {
-            font-family: 'Orbitron', sans-serif;
-        }
         .cyber-card {
-            background: rgba(7, 14, 26, 0.8);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, rgba(16, 28, 51, 0.8) 0%, rgba(8, 14, 26, 0.9) 100%);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0, 240, 255, 0.05);
         }
+        
+        .cyber-card:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+
+        .neon-glow-blue { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
+        .php-glow { text-shadow: 0 0 20px rgba(0, 240, 255, 0.5), 0 0 10px rgba(157, 0, 255, 0.3); }
+
         .cyber-btn {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 100, 255, 0.05));
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            transition: all 0.3s ease;
+            background: linear-gradient(90deg, rgba(0,240,255,0.08) 0%, rgba(157,0,255,0.08) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .cyber-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 100, 255, 0.1));
-            border-color: rgba(0, 240, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            background: linear-gradient(90deg, rgba(0,240,255,0.2) 0%, rgba(157,0,255,0.2) 100%);
+            border-color: #00F0FF;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+            transform: translateY(-2px) scale(1.02);
         }
+
+        /* Highly Enhanced 3D Cards with Equal Glow on All Sides */
         .box-3d {
-            background: linear-gradient(145deg, #081121, #050a14);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(0, 240, 255, 0.1);
-            transition: all 0.3s ease;
+            background: linear-gradient(145deg, rgba(15, 30, 58, 0.95), rgba(7, 14, 28, 0.98));
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center;
         }
         .box-3d:hover {
-            transform: translateY(-3px);
-            border-color: rgba(0, 240, 255, 0.6);
-            box-shadow: 0 10px 20px -5px rgba(0, 240, 255, 0.2);
+            transform: translateY(-8px) scale(1.04);
+            border-color: rgba(0, 240, 255, 1);
+            box-shadow: 0 20px 45px -5px rgba(0, 240, 255, 0.6), 0 0 35px rgba(0, 240, 255, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.3);
+            z-index: 60;
         }
+        .box-3d:hover h5 {
+            color: #00F0FF !important;
+            transition: color 0.3s ease;
+        }
+        .box-3d:hover h4 {
+            text-shadow: 0 0 25px rgba(0, 240, 255, 1);
+            transition: text-shadow 0.3s ease;
+        }
+
+        /* Highlighted Total Cards Style */
         .box-total {
-            background: linear-gradient(145deg, #0c203b, #071324);
-            border: 1px solid rgba(0, 240, 255, 0.5);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            background: linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(157, 0, 255, 0.2));
+            border: 1px solid rgba(0, 240, 255, 0.6);
+            box-shadow: 0 10px 30px -5px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.15);
         }
-        .neon-glow-blue {
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+        .box-total:hover {
+            border-color: rgba(0, 240, 255, 1);
+            box-shadow: 0 20px 50px -5px rgba(0, 240, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.9), inset 0 0 25px rgba(0, 240, 255, 0.4);
+        }
+
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+        }
+
+        /* Custom Scrollbar with Generous Padding (11) on All Sides to prevent shadow clipping */
+        .custom-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, 0.4) rgba(5, 11, 20, 0.5);
+        }
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.6); border-radius: 6px; margin: 12px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.35); border-radius: 6px; border: 2px solid rgba(5, 11, 20, 0.6); }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.7); }
+
+        /* Cinematic Intro Animation Overlay (9 Seconds) */
+        #introScreen {
+            position: fixed;
+            inset: 0;
+            background: #050B14;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
         }
         .fade-out {
             opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease;
-        }
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: rgba(3, 7, 18, 0.5);
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: rgba(0, 240, 255, 0.3);
-            border-radius: 3px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 240, 255, 0.6);
+            visibility: hidden;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-cyberDark text-slate-100 min-h-screen flex flex-col grid-bg relative overflow-x-hidden">
 
-    <!-- Intro Loading Screen -->
-    <div id="introScreen" class="fixed inset-0 z-50 bg-[#030712] flex flex-col items-center justify-center">
-        <div class="w-72 h-1.5 bg-cyan-950 rounded-full overflow-hidden border border-cyan-500/30">
-            <div id="introLoader" class="h-full bg-cyan-400 w-0 transition-all duration-[8500ms] shadow-[0_0_15px_rgba(0,240,255,1)]"></div>
+    <!-- Cinematic 9-Second Intro Screen -->
+    <div id="introScreen">
+        <div class="absolute inset-0 grid-bg pointer-events-none opacity-40"></div>
+        
+        <div class="relative z-10 text-center px-4 space-y-5 max-w-5xl mx-auto">
+            <!-- Top Large Beautiful Punjab Highway Patrol Title (Single Line & Scaled) -->
+            <div class="space-y-1.5 mb-2">
+                <div class="flex items-center justify-center gap-3">
+                    <span class="h-[1px] w-16 bg-gradient-to-r from-transparent to-cyan-400"></span>
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,1)]"></span>
+                    <span class="h-[1px] w-16 bg-gradient-to-l from-transparent to-cyan-400"></span>
+                </div>
+                <h2 class="font-php text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase whitespace-nowrap">
+                    Punjab Highway Patrol
+                </h2>
+                <p class="text-[10px] md:text-xs font-mono text-cyan-400/80 tracking-[0.4em] uppercase">Command & Operations Wing</p>
+            </div>
+
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            
+            <h1 class="font-cyber text-xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
+                Welcome to Muzaffargarh Nexus <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Performance Board</span>
+            </h1>
+            <p class="text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase">Initializing Secure Autonomous District Grid...</p>
+            
+            <div class="w-48 h-1 bg-slate-800/80 mx-auto rounded-full overflow-hidden relative mt-2">
+                <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[9000ms] ease-out"></div>
+            </div>
         </div>
-        <p class="mt-4 font-cyber text-cyan-400 text-xs tracking-widest animate-pulse">INITIALIZING TELEMETRY MATRIX...</p>
     </div>
 
-    <!-- Main Navigation Header -->
-    <header class="border-b border-cyan-500/20 bg-[#070e1a]/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-lg shadow-[0_0_10px_rgba(0,240,255,0.2)]">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <div>
-                    <h1 class="font-cyber text-lg font-bold text-white tracking-wider">SAFE CITY <span class="text-cyan-400">MUZAFFARGARH</span></h1>
-                    <p class="text-xs text-cyan-300/70">Performance Audit & Analytics Dashboard</p>
-                </div>
+    <!-- Ambient Glowing Orbs -->
+    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Top Header (Header 1 - Freezed at top-0) -->
+    <header id="topNavbar" class="cyber-card border-b border-cyan-500/20 sticky top-0 z-50 px-6 lg:px-8 py-3.5 flex justify-between items-center">
+        <!-- Left Brand with Icon Badge -->
+        <div class="flex items-center space-x-3.5">
+            <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-lg shadow-[0_0_15px_rgba(0,240,255,0.3)] shrink-0">
+                <i class="fa-solid fa-shield-halved"></i>
             </div>
-
-            <!-- Global Filter Bar -->
-            <div class="flex flex-wrap items-center gap-3">
-                <select id="policeUnitSelect" class="bg-cyan-950/60 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
-                    <option value="Muzaffargarh HQ">Muzaffargarh HQ</option>
-                    <option value="City Circle">City Circle</option>
-                    <option value="Saddar Circle">Saddar Circle</option>
-                    <option value="Jatoi Circle">Jatoi Circle</option>
-                    <option value="Alipur Circle">Alipur Circle</option>
-                </select>
-
-                <select id="yearSelect" class="bg-cyan-950/60 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
-                    <!-- Populated via JS -->
-                </select>
-
-                <select id="startMonthSelect" class="bg-cyan-950/60 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September" selected>September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                </select>
-
-                <select id="closeMonthSelect" class="bg-cyan-950/60 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400">
-                    <option value="January">January</option>
-                    <option value="February">February</option>
-                    <option value="March">March</option>
-                    <option value="April">April</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July">July</option>
-                    <option value="August">August</option>
-                    <option value="September" selected>September</option>
-                    <option value="October">October</option>
-                    <option value="November">November</option>
-                    <option value="December">December</option>
-                </select>
-
-                <button onclick="applyFilters()" class="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded-xl text-xs font-semibold text-cyan-300 transition cursor-pointer">
-                    <i class="fa-solid fa-filter mr-1"></i> Apply
-                </button>
+            <div>
+                <h1 class="font-cyber font-extrabold text-base md:text-lg tracking-wider text-white neon-glow-blue">
+                    MUZAFFARGARH <span class="text-cyan-400">NEXUS</span>
+                </h1>
+                <p class="text-[9px] text-cyan-300/70 tracking-widest uppercase font-mono">Autonomous District Grid v5.0</p>
             </div>
+        </div>
 
-            <div id="liveClock" class="text-xs text-cyan-400 font-mono hidden xl:block"></div>
+        <!-- Center Title: Punjab Highway Patrol (Single Line & Fully Responsive) -->
+        <div class="hidden lg:flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2">
+                <span class="h-[1px] w-10 bg-gradient-to-r from-transparent to-cyan-500/60"></span>
+                <span class="font-php text-base xl:text-lg font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase whitespace-nowrap">
+                    Punjab Highway Patrol
+                </span>
+                <span class="h-[1px] w-10 bg-gradient-to-l from-transparent to-cyan-500/60"></span>
+            </div>
+            <span class="text-[8px] font-mono text-cyan-400/60 tracking-[0.35em] uppercase mt-0.5">Command & Operations Wing</span>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="flex items-center space-x-3">
+            <div class="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300 font-mono">
+                <i class="fa-regular fa-clock text-cyan-400"></i>
+                <span id="liveClock"></span>
+            </div>
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="hidden sm:inline">SYSTEM SYNCED</span>
+                <span class="sm:hidden">SYNCED</span>
+            </div>
         </div>
     </header>
 
-    <!-- Main Workspace Layout -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 lg:p-8 max-w-[1800px] w-full mx-auto flex flex-col gap-6">
+        
+        <!-- Top Horizontal Filter Bar (Sticky below Header 1) -->
+        <section id="filterBar" class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4 sticky top-[73px] z-40 backdrop-blur-md shadow-xl">
             
-            <!-- Left Sidebar Navigation (Performance Heads) -->
-            <section class="lg:col-span-3 cyber-card rounded-3xl p-4 flex flex-col space-y-2 h-fit">
-                <div class="px-3 py-2 border-b border-cyan-500/20 mb-2">
-                    <h2 class="font-cyber text-xs font-bold text-cyan-400 tracking-wider">PERFORMANCE HEADS</h2>
+            <!-- Left: SELECT POLICE UNIT -->
+            <div class="w-full xl:w-80 space-y-1.5">
+                <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">SELECT POLICE UNIT</label>
+                <div class="relative">
+                    <select id="policeUnitSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                        <option value="All Units (District Wide)" selected>All Units (District Wide)</option>
+                        <option value="Riaz Abad">Riaz Abad</option>
+                        <option value="Khan Pur">Khan Pur</option>
+                        <option value="Head M. Wala">Head M. Wala</option>
+                        <option value="Jeewana Bangla">Jeewana Bangla</option>
+                        <option value="Ghazi Ghat">Ghazi Ghat</option>
+                        <option value="Head Bakaini">Head Bakaini</option>
+                        <option value="Head Punjnad">Head Punjnad</option>
+                        <option value="Hamzay Wali">Hamzay Wali</option>
+                        <option value="Meer Haji">Meer Haji</option>
+                        <option value="Khander">Khander</option>
+                        <option value="Meerani">Meerani</option>
+                        <option value="Gabbar Arain">Gabbar Arain</option>
+                        <option value="Head Tounsa">Head Tounsa</option>
+                        <option value="Langar Wah">Langar Wah</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
                 </div>
+            </div>
+
+            <!-- Right: Year, Start Month, Close Month & APPLY Button -->
+            <div class="flex flex-wrap xl:flex-nowrap items-end gap-3 w-full xl:w-auto justify-end">
                 
-                <div class="space-y-2 max-h-[600px] overflow-y-auto custom-scroll pr-1">
+                <!-- YEAR -->
+                <div class="space-y-1.5 w-28">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">YEAR</label>
+                    <div class="relative">
+                        <select id="yearSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                            <!-- Populated via JS -->
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- START MONTH -->
+                <div class="space-y-1.5 w-32">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">START MONTH</label>
+                    <div class="relative">
+                        <select id="startMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                            <option value="January" selected>January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- CLOSE MONTH -->
+                <div class="space-y-1.5 w-32">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">CLOSE MONTH</label>
+                    <div class="relative">
+                        <select id="closeMonthSelect" class="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono">
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December" selected>December</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- APPLY Button -->
+                <button onclick="applyFilters()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 font-cyber shadow-lg shadow-emerald-600/30 cursor-pointer h-[38px]">
+                    <i class="fa-solid fa-filter"></i> APPLY
+                </button>
+
+            </div>
+        </section>
+
+        <!-- Lower Split Grid: Left Sidebar with Performance Heads & Right Viewport -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Sidebar - Performance Heads List -->
+            <section class="cyber-card rounded-3xl p-5 flex flex-col gap-4 lg:col-span-3">
+                <div class="flex items-center justify-between border-b border-cyan-500/20 pb-3">
+                    <h2 class="font-cyber text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-shield"></i> PERFORMANCE HEADS
+                    </h2>
+                    <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded font-mono border border-cyan-500/30">SECURE</span>
+                </div>
+
+                <!-- Scrollable List of Performance Heads (9 Heads Total) -->
+                <div class="space-y-3 custom-scroll max-h-[650px] overflow-y-auto pr-3">
                     
                     <!-- 1. FIR Analysis -->
                     <button onclick="loadModule('FIR Analysis')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
                             <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-file-lines"></i>
+                                <i class="fa-solid fa-shield"></i>
                             </div>
                             <span class="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors text-left">1. FIR Analysis</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-cyan-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 2. Accident -->
                     <button onclick="loadModule('Accident')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform text-sm">
+                            <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-sm">
                                 <i class="fa-solid fa-car-burst"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-rose-300 transition-colors text-left">2. Accident</span>
+                            <span class="text-sm font-bold text-white group-hover:text-purple-300 transition-colors text-left">2. Accident</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-rose-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 3. PO & CA Without EPP -->
                     <button onclick="loadModule('PO & CA Without EPP')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-user-slash"></i>
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-user-shield"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-amber-300 transition-colors text-left">3. PO & CA Without EPP</span>
+                            <span class="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors text-left">3. PO & CA Without EPP</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-amber-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 4. E-Police App (EPP) -->
                     <button onclick="loadModule('E-Police App (EPP)')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-mobile-screen"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-blue-300 transition-colors text-left">4. E-Police App (EPP)</span>
+                            <span class="text-sm font-bold text-white group-hover:text-amber-300 transition-colors text-left">4. E-Police App (EPP)</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-blue-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 5. Help & Other Heads -->
                     <button onclick="loadModule('Help & Other Heads')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-hands-holding-child"></i>
+                            <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-circle-info"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors text-left">5. Help & Other Heads</span>
+                            <span class="text-sm font-bold text-white group-hover:text-blue-300 transition-colors text-left">5. Help & Other Heads</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-emerald-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-blue-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 6. Recovery & Seizure Inventory -->
                     <button onclick="loadModule('Recovery & Seizure Inventory')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-sm">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform text-sm">
                                 <i class="fa-solid fa-box-archive"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-purple-300 transition-colors text-left">6. Recovery Inventory</span>
+                            <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors text-left">6. Recovery & Seizure Inventory</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-purple-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 7. Heinous Crime -->
                     <button onclick="loadModule('Heinous Crime')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-skull-crossbones"></i>
+                            <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-red-400 transition-colors text-left">7. Heinous Crime</span>
+                            <span class="text-sm font-bold text-white group-hover:text-rose-300 transition-colors text-left">7. Heinous Crime</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-red-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-rose-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                     <!-- 8. E-Challan Analysis -->
@@ -266,8 +421,8 @@
 
             <!-- Right Viewport Area -->
             <section class="lg:col-span-9 cyber-card rounded-3xl p-6 lg:p-8 flex flex-col min-h-[600px]">
-                <!-- Header Inside Viewport -->
-                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 border-b border-cyan-500/20 gap-4 sticky top-[100px] bg-[#070e1a]/95 backdrop-blur-md z-30 pt-2 -mt-2">
+                <!-- Header Inside Viewport (Adjusted sticky top offset so it sits nicely below the filter bar) -->
+                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 border-b border-cyan-500/20 gap-4 sticky top-[155px] bg-[#070e1a]/95 backdrop-blur-md z-30 pt-2 -mt-2">
                     <div class="w-full xl:w-auto">
                         <h3 id="displayTitle" class="font-cyber text-2xl font-extrabold text-white tracking-wide">SYSTEM STANDBY</h3>
                         <p id="displaySubtitle" class="text-sm text-cyan-300/80 mt-1.5 font-mono">Waiting for performance head selection...</p>
@@ -494,7 +649,7 @@
 
             const workspace = document.getElementById('workspaceContent');
             if(workspace) {
-                let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 w-full custom-scroll max-h-[550px] overflow-y-auto px-4 py-4">`;
+                let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 w-full custom-scroll max-h-[550px] overflow-y-auto px-11 py-11">`;
                 
                 subHeads.forEach((head, index) => {
                     let randomVal = Math.floor(Math.random() * 850) + 15;
