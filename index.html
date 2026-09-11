@@ -22,11 +22,12 @@
         }
     </script>
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .font-php { font-family: 'Cinzel', serif; letter-spacing: 0.12em; }
         
         .cyber-card {
             background: linear-gradient(135deg, rgba(16, 28, 51, 0.8) 0%, rgba(8, 14, 26, 0.9) 100%);
@@ -41,6 +42,7 @@
         }
 
         .neon-glow-blue { text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); }
+        .php-glow { text-shadow: 0 0 20px rgba(0, 240, 255, 0.5), 0 0 10px rgba(157, 0, 255, 0.3); }
 
         .cyber-btn {
             background: linear-gradient(90deg, rgba(0,240,255,0.08) 0%, rgba(157,0,255,0.08) 100%);
@@ -55,28 +57,38 @@
             transform: translateY(-2px) scale(1.02);
         }
 
+        /* Highly Enhanced 3D Cards with Equal Glow on All Sides */
         .box-3d {
-            background: linear-gradient(145deg, rgba(20, 32, 58, 0.9), rgba(10, 16, 30, 0.95));
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.05);
+            background: linear-gradient(145deg, rgba(15, 30, 58, 0.95), rgba(7, 14, 28, 0.98));
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.08);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform-origin: center;
         }
         .box-3d:hover {
-            transform: translateY(-8px) scale(1.08);
-            border-color: rgba(0, 240, 255, 0.8);
-            box-shadow: 0 20px 45px -5px rgba(0, 240, 255, 0.3), 0 0 30px rgba(0, 240, 255, 0.4);
-            z-index: 30;
+            transform: translateY(-8px) scale(1.04);
+            border-color: rgba(0, 240, 255, 1);
+            box-shadow: 0 20px 45px -5px rgba(0, 240, 255, 0.6), 0 0 35px rgba(0, 240, 255, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.3);
+            z-index: 60;
         }
         .box-3d:hover h5 {
-            transform: scale(1.05);
             color: #00F0FF !important;
-            transition: transform 0.3s ease;
+            transition: color 0.3s ease;
         }
         .box-3d:hover h4 {
-            transform: scale(1.06);
-            text-shadow: 0 0 15px rgba(0, 240, 255, 0.8);
-            transition: transform 0.3s ease;
+            text-shadow: 0 0 25px rgba(0, 240, 255, 1);
+            transition: text-shadow 0.3s ease;
+        }
+
+        /* Highlighted Total Cards Style */
+        .box-total {
+            background: linear-gradient(145deg, rgba(0, 240, 255, 0.2), rgba(157, 0, 255, 0.2));
+            border: 1px solid rgba(0, 240, 255, 0.6);
+            box-shadow: 0 10px 30px -5px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+        .box-total:hover {
+            border-color: rgba(0, 240, 255, 1);
+            box-shadow: 0 20px 50px -5px rgba(0, 240, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.9), inset 0 0 25px rgba(0, 240, 255, 0.4);
         }
 
         .grid-bg {
@@ -85,9 +97,15 @@
                               linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
         }
 
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.5); }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.2); border-radius: 4px; }
+        /* Custom Scrollbar with Generous Padding (11) on All Sides to prevent shadow clipping */
+        .custom-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, 0.4) rgba(5, 11, 20, 0.5);
+        }
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.6); border-radius: 6px; margin: 12px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.35); border-radius: 6px; border: 2px solid rgba(5, 11, 20, 0.6); }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.7); }
 
         /* Cinematic Intro Animation Overlay (9 Seconds) */
         #introScreen {
@@ -112,21 +130,31 @@
     <!-- Cinematic 9-Second Intro Screen -->
     <div id="introScreen">
         <div class="absolute inset-0 grid-bg pointer-events-none opacity-40"></div>
-        <div class="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
-        <div class="absolute w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none"></div>
         
-        <div class="relative z-10 text-center px-4 space-y-6 max-w-4xl mx-auto animate-pulse">
-            <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px] shadow-[0_0_30px_rgba(0,240,255,0.4)]">
-                <div class="w-full h-full bg-cyberDark rounded-[14px] flex items-center justify-center">
-                    <i class="fa-solid fa-shield-halved text-cyan-400 text-3xl"></i>
+        <div class="relative z-10 text-center px-4 space-y-5 max-w-5xl mx-auto">
+            <!-- Top Large Beautiful Punjab Highway Patrol Title (Single Line & Scaled) -->
+            <div class="space-y-1.5 mb-2">
+                <div class="flex items-center justify-center gap-3">
+                    <span class="h-[1px] w-16 bg-gradient-to-r from-transparent to-cyan-400"></span>
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,1)]"></span>
+                    <span class="h-[1px] w-16 bg-gradient-to-l from-transparent to-cyan-400"></span>
                 </div>
+                <h2 class="font-php text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase whitespace-nowrap">
+                    Punjab Highway Patrol
+                </h2>
+                <p class="text-[10px] md:text-xs font-mono text-cyan-400/80 tracking-[0.4em] uppercase">Command & Operations Wing</p>
             </div>
-            <h1 class="font-cyber text-2xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
+
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            
+            <h1 class="font-cyber text-xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
                 Welcome to Muzaffargarh Nexus <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Performance Board</span>
             </h1>
             <p class="text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase">Initializing Secure Autonomous District Grid...</p>
-            <div class="w-48 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden relative">
-                <!-- 9 seconds smooth transition for loading bar -->
+            
+            <div class="w-48 h-1 bg-slate-800/80 mx-auto rounded-full overflow-hidden relative mt-2">
                 <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[9000ms] ease-out"></div>
             </div>
         </div>
@@ -136,30 +164,43 @@
     <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
     <div class="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-    <!-- Top Header -->
-    <header class="cyber-card border-b border-cyan-500/20 sticky top-0 z-50 px-8 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px] shadow-lg shadow-cyan-500/30">
-                <div class="w-full h-full bg-cyberDark rounded-[10px] flex items-center justify-center">
-                    <i class="fa-solid fa-microchip text-cyan-400 text-xl animate-pulse"></i>
-                </div>
+    <!-- Top Header (Header 1 - Freezed at top-0) -->
+    <header id="topNavbar" class="cyber-card border-b border-cyan-500/20 sticky top-0 z-50 px-6 lg:px-8 py-3.5 flex justify-between items-center">
+        <!-- Left Brand with Icon Badge -->
+        <div class="flex items-center space-x-3.5">
+            <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-lg shadow-[0_0_15px_rgba(0,240,255,0.3)] shrink-0">
+                <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div>
-                <h1 class="font-cyber font-extrabold text-lg tracking-wider text-white neon-glow-blue">
+                <h1 class="font-cyber font-extrabold text-base md:text-lg tracking-wider text-white neon-glow-blue">
                     MUZAFFARGARH <span class="text-cyan-400">NEXUS</span>
                 </h1>
-                <p class="text-[10px] text-cyan-300/70 tracking-widest uppercase font-mono">Autonomous District Grid v5.0</p>
+                <p class="text-[9px] text-cyan-300/70 tracking-widest uppercase font-mono">Autonomous District Grid v5.0</p>
             </div>
         </div>
 
-        <div class="flex items-center space-x-4">
-            <div class="hidden md:flex items-center space-x-2 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300 font-mono">
+        <!-- Center Title: Punjab Highway Patrol (Single Line & Fully Responsive) -->
+        <div class="hidden lg:flex flex-col items-center justify-center">
+            <div class="flex items-center gap-2">
+                <span class="h-[1px] w-10 bg-gradient-to-r from-transparent to-cyan-500/60"></span>
+                <span class="font-php text-base xl:text-lg font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase whitespace-nowrap">
+                    Punjab Highway Patrol
+                </span>
+                <span class="h-[1px] w-10 bg-gradient-to-l from-transparent to-cyan-500/60"></span>
+            </div>
+            <span class="text-[8px] font-mono text-cyan-400/60 tracking-[0.35em] uppercase mt-0.5">Command & Operations Wing</span>
+        </div>
+
+        <!-- Right Controls -->
+        <div class="flex items-center space-x-3">
+            <div class="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-300 font-mono">
                 <i class="fa-regular fa-clock text-cyan-400"></i>
                 <span id="liveClock"></span>
             </div>
-            <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold font-mono">
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold font-mono">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span>SYSTEM SYNCED</span>
+                <span class="hidden sm:inline">SYSTEM SYNCED</span>
+                <span class="sm:hidden">SYNCED</span>
             </div>
         </div>
     </header>
@@ -167,8 +208,8 @@
     <!-- Main Workspace -->
     <main class="flex-1 p-6 lg:p-8 max-w-[1800px] w-full mx-auto flex flex-col gap-6">
         
-        <!-- Top Horizontal Filter Bar -->
-        <section class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4">
+        <!-- Top Horizontal Filter Bar (Sticky below Header 1) -->
+        <section id="filterBar" class="cyber-card rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4 sticky top-[73px] z-40 backdrop-blur-md shadow-xl">
             
             <!-- Left: SELECT POLICE UNIT -->
             <div class="w-full xl:w-80 space-y-1.5">
@@ -273,8 +314,8 @@
                     <span class="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded font-mono border border-cyan-500/30">SECURE</span>
                 </div>
 
-                <!-- Scrollable List of Performance Heads -->
-                <div class="space-y-3 custom-scroll max-h-[650px] overflow-y-auto pr-1">
+                <!-- Scrollable List of Performance Heads (9 Heads Total) -->
+                <div class="space-y-3 custom-scroll max-h-[650px] overflow-y-auto pr-3">
                     
                     <!-- 1. FIR Analysis -->
                     <button onclick="loadModule('FIR Analysis')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
@@ -331,13 +372,13 @@
                         <i class="fa-solid fa-arrow-right text-xs text-blue-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <!-- 6. Recovery Analysis -->
-                    <button onclick="loadModule('Recovery Analysis')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
+                    <!-- 6. Recovery & Seizure Inventory -->
+                    <button onclick="loadModule('Recovery & Seizure Inventory')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
                             <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform text-sm">
                                 <i class="fa-solid fa-box-archive"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors text-left">6. Recovery Analysis</span>
+                            <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors text-left">6. Recovery & Seizure Inventory</span>
                         </div>
                         <i class="fa-solid fa-arrow-right text-xs text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
@@ -361,18 +402,18 @@
                             </div>
                             <span class="text-sm font-bold text-white group-hover:text-teal-300 transition-colors text-left">8. E-Challan Analysis</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-teal-400 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-teal-300 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
-                    <!-- 9. Report Center -->
-                    <button onclick="loadModule('Report Center')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
+                    <!-- 9. PKM Services -->
+                    <button onclick="loadModule('PKM Services')" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-xl bg-cyan-600/10 border border-cyan-600/30 flex items-center justify-center text-cyan-300 group-hover:scale-110 transition-transform text-sm">
-                                <i class="fa-solid fa-file-lines"></i>
+                            <div class="w-9 h-9 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/30 flex items-center justify-center text-fuchsia-400 group-hover:scale-110 transition-transform text-sm">
+                                <i class="fa-solid fa-id-card"></i>
                             </div>
-                            <span class="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors text-left">9. Report Center</span>
+                            <span class="text-sm font-bold text-white group-hover:text-fuchsia-300 transition-colors text-left">9. PKM Services</span>
                         </div>
-                        <i class="fa-solid fa-arrow-right text-xs text-cyan-300 group-hover:translate-x-1 transition-transform"></i>
+                        <i class="fa-solid fa-arrow-right text-xs text-fuchsia-300 group-hover:translate-x-1 transition-transform"></i>
                     </button>
 
                 </div>
@@ -380,7 +421,8 @@
 
             <!-- Right Viewport Area -->
             <section class="lg:col-span-9 cyber-card rounded-3xl p-6 lg:p-8 flex flex-col min-h-[600px]">
-                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 border-b border-cyan-500/20 gap-4">
+                <!-- Header Inside Viewport (Adjusted sticky top offset so it sits nicely below the filter bar) -->
+                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 border-b border-cyan-500/20 gap-4 sticky top-[155px] bg-[#070e1a]/95 backdrop-blur-md z-30 pt-2 -mt-2">
                     <div class="w-full xl:w-auto">
                         <h3 id="displayTitle" class="font-cyber text-2xl font-extrabold text-white tracking-wide">SYSTEM STANDBY</h3>
                         <p id="displaySubtitle" class="text-sm text-cyan-300/80 mt-1.5 font-mono">Waiting for performance head selection...</p>
@@ -396,14 +438,14 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Workspace Screen (Initially Clean / Standby) -->
+                <!-- Dynamic Workspace Screen -->
                 <div id="workspaceContent" class="flex-1 flex flex-col items-center justify-center p-8 text-center my-auto">
                     <div class="w-24 h-24 rounded-3xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-3xl mb-4 shadow-lg shadow-cyan-500/10 animate-pulse">
                         <i class="fa-solid fa-chart-pie"></i>
                     </div>
                     <h4 class="font-cyber text-white font-bold text-lg tracking-wider">READY FOR PERFORMANCE AUDIT</h4>
                     <p class="text-slate-400 text-sm max-w-sm mt-2 leading-relaxed">
-                        Select any of the <strong class="text-cyan-400">9 Performance Heads</strong> from the left sidebar to analyze respective telemetry data and statistics.
+                        Select any of the <strong class="text-cyan-400">Performance Heads</strong> from the left sidebar to analyze respective telemetry data and statistics.
                     </p>
                 </div>
             </section>
@@ -414,7 +456,6 @@
     <!-- JavaScript Controller -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Cinematic 9-Second Intro Splash Animation Trigger
             const loader = document.getElementById('introLoader');
             if(loader) {
                 setTimeout(() => { loader.style.width = '100%'; }, 100);
@@ -424,16 +465,14 @@
                 if(intro) {
                     intro.classList.add('fade-out');
                 }
-            }, 9000); // exactly 9 seconds
+            }, 9000);
 
-            // Live Clock
             setInterval(() => {
                 const d = new Date();
                 const clockEl = document.getElementById('liveClock');
                 if(clockEl) clockEl.innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
             }, 1000);
 
-            // Populate Years (2016-2026)
             const yearSelect = document.getElementById('yearSelect');
             if(yearSelect) {
                 yearSelect.innerHTML = ''; 
@@ -449,14 +488,125 @@
 
         const moduleData = {
             "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC", "25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total"],
-            "Accident": ["Fatal Accidents", "Non-Fatal Accidents", "Hit & Run", "Over Speeding Collisions", "Heavy Transport Incidents", "Pedestrian Strikes", "Night Collisions", "Total Accidents"],
-            "PO & CA Without EPP": ["PO Arrested (Without EPP)", "CA Arrested (Without EPP)", "PO Verified via Manual Logs", "CA Verified via Manual Logs", "Pending Verification Logs", "Total Non-EPP Actions"],
-            "E-Police App (EPP)": ["Verifications Conducted", "Vehicle Checks", "Suspect Identifications", "Tenant Registrations", "Employee Verification", "Hotel Guest Logs", "Total EPP Logs"],
-            "Help & Other Heads": ["Public Distress Calls", "Missing Persons Located", "Dispute Resolutions", "Escort Services", "General Assistance", "Special Security Details", "Total Assistances"],
-            "Recovery Analysis": ["Stolen Vehicles Recovered", "Illicit Firearms Seized", "Narcotics Confiscated (kg)", "Stolen Cash / Valuables", "Extortion Assets", "Smuggled Goods", "Total Recovery Value"],
-            "Heinous Crime": ["Murder (302 PPC)", "Dacoity (395 PPC)", "Robbery (392 PPC)", "Kidnapping for Ransom", "Rape / Assault", "Vehicle Snatching", "Total Heinous Cases"],
-            "E-Challan Analysis": ["Red Light Violations", "Over Speeding", "Wrong Way Driving", "No Helmet", "Seatbelt Defect", "Illegal Parking", "Total E-Challans Issued"],
-            "Report Center": ["Daily Sitreps Generated", "Weekly Crime Summaries", "Monthly District Briefs", "Special Intelligence Audits", "Pending Dispatch Logs", "Archived Transmissions", "Total System Reports"]
+            
+            "Accident": [
+                "Fatal Accident", 
+                "Fatal Accident - Expired", 
+                "Fatal Accident - Injured", 
+                "Non-Fatal Accident", 
+                "Non-Fatal Accident - Injured", 
+                "Total Accidents", 
+                "Total Casualties (Expired)", 
+                "Total Injured"
+            ],
+
+            "PO & CA Without EPP": [
+                "PO Arrested", 
+                "PO (A Category)", 
+                "PO (B Category)", 
+                "CA Arrested", 
+                "Total PO", 
+                "Total CA"
+            ],
+
+            "E-Police App (EPP)": [
+                "Person Checked", 
+                "Vehicle Checked", 
+                "PO", 
+                "PO (A Category)", 
+                "PO (B Category)", 
+                "CA", 
+                "Stolen Vehicle Recovered", 
+                "Motorcycle Recovered", 
+                "Car Recovered", 
+                "Other Vehicles Recovered", 
+                "Total PO", 
+                "Total CA", 
+                "Total Vehicle Recovered"
+            ],
+
+            "Help & Other Heads": [
+                "Temporary Encroachment", 
+                "Permanent Encroachment", 
+                "General Help", 
+                "1124 Help", 
+                "Lost & Found Child", 
+                "Cattle Diary", 
+                "Reflector", 
+                "Motorcycle 550/CRPC", 
+                "Motorcycle 115/MVO", 
+                "Motorcycle 134/CRPC", 
+                "Total Encroachment", 
+                "Total Help", 
+                "Total Motorcycle Seized"
+            ],
+
+            "Recovery & Seizure Inventory": [
+                "Kalashnikov's Recovered", 
+                "Rifle Recovered", 
+                "Gun & Carbin Recovered", 
+                "Repeater Recovered", 
+                "Pistol & Revolver Recovered", 
+                "Liquor (Liters)", 
+                "Lehn (Liters)", 
+                "Poust (KG)", 
+                "Opium (Grams)", 
+                "Heroin (grams)", 
+                "Hashish (grams)", 
+                "Chars (grams)", 
+                "Total Bullets", 
+                "Total Cartridges", 
+                "Total Weapons Recovered"
+            ],
+
+            "Heinous Crime": [
+                "Dacoity Robbery with Murder", 
+                "Dacoity + Robbery with injury", 
+                "Dacoity", 
+                "Highway Robbery", 
+                "Highway Robbery at Petrol Pump", 
+                "M/V Snatching", 
+                "Kidnapping", 
+                "Murder", 
+                "Attempted Murder", 
+                "Mobile Snatching", 
+                "Shop Robbery", 
+                "Police Encounter",
+                "Total Heinous Crime Reported", 
+                "Total Foiled Crime Reported", 
+                "Total Unfoiled Crime Reported"
+            ],
+
+            "E-Challan Analysis": [
+                "Underage Drivers", 
+                "Without Helmet", 
+                "Overload Transport", 
+                "Overspeeding", 
+                "Paid Challans", 
+                "Unpaid Challans", 
+                "Paid Amount", 
+                "Unpaid Amount", 
+                "Total Challans", 
+                "Total Amount Imposed"
+            ],
+
+            "PKM Services": [
+                "Crime Report", 
+                "Loss Report", 
+                "Voilance Against Women Report", 
+                "Copy of FIR", 
+                "Tenants Registration", 
+                "Registration of Private Employee (ROPE)", 
+                "Learner License Issued", 
+                "Learner License Renewal", 
+                "Regular License Renewal", 
+                "International License Renewal", 
+                "Character Certificate", 
+                "Police Verification", 
+                "Vehicle Verification", 
+                "Total PKM Services", 
+                "Total Learner Issued"
+            ]
         };
 
         let activeTarget = null;
@@ -491,52 +641,52 @@
             const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
             if(paramBoxContainer) {
                 paramBoxContainer.innerHTML = `
-                    <div class="px-5 py-2.5 bg-cyan-950/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.15)] h-[38px]">
-                        <i class="fa-solid fa-layer-group text-cyan-400 text-sm"></i>
-                        <span>(${subHeads.length} Parameters Loaded)</span>
+                    <div class="px-5 py-2.5 bg-cyan-950/60 border border-cyan-500/30 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+                        <i class="fa-solid fa-layer-group text-cyan-400"></i> Active Parameters: ${subHeads.length}
                     </div>
                 `;
             }
 
-            let cardsHTML = `<div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left custom-scroll max-h-[500px] overflow-y-auto pr-2">`;
-            
-            subHeads.forEach((head, index) => {
-                let randomVal = head.includes("Total") ? "1,240" : Math.floor(Math.random() * 85) + 5;
-                let isTotal = head.includes("Total");
+            const workspace = document.getElementById('workspaceContent');
+            if(workspace) {
+                let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 w-full custom-scroll max-h-[550px] overflow-y-auto px-11 py-11">`;
                 
-                let borderColor = isTotal ? "border-cyan-400 shadow-[0_0_20px_rgba(0,240,255,0.3)]" : "border-white/10";
-                let textColor = isTotal ? "text-cyan-300 font-extrabold" : "text-white";
-                let badgeColor = isTotal ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                subHeads.forEach((head, index) => {
+                    let randomVal = Math.floor(Math.random() * 850) + 15;
+                    let isTotal = head.toLowerCase().includes('total');
+                    let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
+                    let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
 
-                cardsHTML += `
-                    <div class="box-3d p-4 rounded-2xl relative overflow-hidden ${borderColor} cursor-pointer">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}">HEAD-${index+1}</span>
-                            <i class="fa-solid fa-chart-line text-slate-500 text-xs"></i>
+                    let codeStr = index + 1;
+                    if(codeStr < 10) codeStr = '0' + codeStr;
+
+                    gridHtml += `
+                        <div class="${cardClass} rounded-2xl p-4 flex flex-col justify-between text-left cursor-pointer group min-h-[130px]">
+                            <div>
+                                <div class="flex justify-between items-start mb-1.5">
+                                    <span class="text-[10px] font-mono ${badgeColor} tracking-widest uppercase">${isTotal ? '★ SUMMARY TOTAL' : 'CODE-' + codeStr}</span>
+                                    <span class="w-2 h-2 rounded-full ${isTotal ? 'bg-cyan-400 shadow-[0_0_12px_rgba(0,240,255,1)] animate-pulse' : 'bg-cyan-400/70 group-hover:bg-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.9)]'} transition-all"></span>
+                                </div>
+                                <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
+                            </div>
+                            <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/40' : 'border-cyan-500/20'}">
+                                <h4 class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${randomVal}</h4>
+                                <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +4.2%</span>
+                            </div>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-300 tracking-wide line-clamp-1 transition-all duration-300">${head}</h5>
-                        <div class="flex items-baseline justify-between mt-3">
-                            <h4 class="font-cyber text-2xl ${textColor} transition-all duration-300">${randomVal}</h4>
-                            <span class="text-[9px] text-emerald-400 font-mono"><i class="fa-solid fa-shield-halved"></i> Verified</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            cardsHTML += `</div>`;
-
-            const workspaceContent = document.getElementById('workspaceContent');
-            if(workspaceContent) {
-                workspaceContent.innerHTML = `
-                    <div class="w-full flex flex-col gap-4">
-                        ${cardsHTML}
-                    </div>
-                `;
+                    `;
+                });
+                gridHtml += `</div>`;
+                workspace.innerHTML = gridHtml;
             }
         }
 
         function exportReport() {
-            alert("📥 Performance report export sequence initiated successfully!");
+            if(!activeTarget) {
+                alert("⚠️ Please select a Performance Head before exporting telemetry reports.");
+                return;
+            }
+            alert(`📥 Secure Telemetry Report for [ ${activeTarget} ] exported successfully to local archive.`);
         }
     </script>
 </body>
