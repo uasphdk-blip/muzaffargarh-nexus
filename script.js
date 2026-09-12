@@ -33,9 +33,23 @@ function columnIndexToLetter(colIndex) {
   return letter;
 }
 
-// Helper to safely update DOM text content
-function updateElementText(id, value) {
-  let el = document.getElementById(id);
+// Smart Helper to find element dynamically (supports both Code-1 and Code-01 formats)
+function updateElementText(baseId, value) {
+  let el = document.getElementById(baseId);
+  
+  if (!el) {
+    // Try variations with and without zero padding (e.g., fir-code-1 vs fir-code-01)
+    let parts = baseId.split('-');
+    let prefix = parts.slice(0, -1).join('-');
+    let numStr = parts[parts.length - 1];
+    let num = parseInt(numStr, 10);
+    
+    if (!isNaN(num)) {
+      let padded = num < 10 ? '0' + num : num;
+      el = document.getElementById(`${prefix}-${padded}`) || document.getElementById(`${prefix}-${num}`);
+    }
+  }
+
   if (el) {
     el.innerText = typeof value === 'number' ? value.toLocaleString() : value;
   }
@@ -67,8 +81,7 @@ async function updateDashboard() {
   for (let i = 3; i <= 28; i++) { // C=3 to AB=28
     let col = columnIndexToLetter(i);
     let indexNum = i - 2;
-    let paddedIndex = indexNum < 10 ? '0' + indexNum : indexNum;
-    let codeName = `fir-code-${paddedIndex}`;
+    let codeName = `fir-code-${indexNum}`;
     firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
@@ -242,10 +255,9 @@ async function updateDashboard() {
   updateElementText("total-pkm-services", totalPKMServices);
   updateElementText("total-learner-issued", totalLearnerIssued);
 
-  console.log("Dashboard Updated Successfully with all 9 headings mapped and rendered!");
+  console.log("Dashboard Updated Successfully!");
 }
 
-// Automatically trigger update on page load and setup listeners if selectors exist
 document.addEventListener("DOMContentLoaded", () => {
   updateDashboard();
 
