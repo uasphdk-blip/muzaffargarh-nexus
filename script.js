@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxsjzjso_Yfopgc8AK8LguuvVrO1P_mxwP9Vc1OPxQkikBdbNkWuZ1baK2syMkeMGG9sA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyuyaP-VzENZja-brhMSY7abLZv_fZ2toX1kT5W_raU0UL7Xf-d5YbScE-jY6jIxEjFqQ/exec";
 
 async function fetchDashboardData() {
   try {
@@ -13,7 +13,13 @@ async function fetchDashboardData() {
 
 // Helper to sum columns safely
 function getVal(row, col) {
-  return Number(row.columns[col]) || 0;
+  let val = 0;
+  if (row.columns && row.columns[col] !== undefined) {
+    val = row.columns[col];
+  } else if (row[col] !== undefined) {
+    val = row[col];
+  }
+  return Number(val) || 0;
 }
 
 // Utility to convert column index to letters
@@ -51,8 +57,8 @@ async function updateDashboard() {
 
   // Filter data based on UI selectors
   let filteredData = rawData.filter(row => {
-    let matchUnit = (selectedUnit === "All" || row.policeUnit === selectedUnit);
-    let matchYear = (row.year === selectedYear);
+    let matchUnit = (selectedUnit === "All" || row.policeUnit === selectedUnit || row.Unit === selectedUnit);
+    let matchYear = (String(row.year) === String(selectedYear) || String(row.Year) === String(selectedYear));
     return matchUnit && matchYear;
   });
 
@@ -116,16 +122,16 @@ async function updateDashboard() {
   let eppValues = eppCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
   
   let eppCards = {
-    "epp-code-1": eppValues[0], // AG
-    "epp-code-2": eppValues[1], // AH
-    "epp-code-3": eppValues[2] + eppValues[3], // AI+AJ
-    "epp-code-4": eppValues[2], // AI
-    "epp-code-5": eppValues[3], // AJ
-    "epp-code-6": eppValues[4], // AK
-    "epp-code-7": eppValues[5], // AL
-    "epp-code-8": eppValues[6], // AM
-    "epp-code-9": eppValues[7], // AN
-    "epp-code-10": eppValues[8]// AO
+    "epp-code-1": eppValues[0],
+    "epp-code-2": eppValues[1],
+    "epp-code-3": eppValues[2] + eppValues[3],
+    "epp-code-4": eppValues[2],
+    "epp-code-5": eppValues[3],
+    "epp-code-6": eppValues[4],
+    "epp-code-7": eppValues[5],
+    "epp-code-8": eppValues[6],
+    "epp-code-9": eppValues[7],
+    "epp-code-10": eppValues[8]
   };
   let eppTotalPO = eppValues[2] + eppValues[3];
   let eppTotalCA = eppValues[4];
@@ -227,7 +233,7 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "BD"), 0);
+  let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0);
   let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0);
 
   renderCards(pkmCards);
