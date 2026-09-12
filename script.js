@@ -27,12 +27,10 @@ function columnIndexToLetter(colIndex) {
   return letter;
 }
 
-// Main calculation and rendering function triggered on "Apply" filter
+// Main calculation and rendering function triggered on filter / load
 async function updateDashboard() {
-  let selectedUnit = document.getElementById("policeUnitSelect").value;
-  let selectedYear = document.getElementById("yearSelect").value;
-  let startMonth = document.getElementById("startMonthSelect").value;
-  let closeMonth = document.getElementById("closeMonthSelect").value;
+  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All";
+  let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "2026";
 
   let rawData = await fetchDashboardData();
 
@@ -105,7 +103,7 @@ async function updateDashboard() {
   };
   let eppTotalPO = eppValues[2] + eppValues[3];
   let eppTotalCA = eppValues[4];
-  let eppTotalVehicles = eppValues[6] + eppValues[7] + eppValues[8]; // AM+AN+AO (indices 6,7,8)
+  let eppTotalVehicles = eppValues[6] + eppValues[7] + eppValues[8];
 
 
   // --- 5. Help & Other Heads (AU to BE) ---
@@ -115,42 +113,40 @@ async function updateDashboard() {
   let sumBF = filteredData.reduce((acc, r) => acc + getVal(r, "BF"), 0);
 
   let helpCards = {
-    "help-code-1": helpValues[0], // AU
-    "help-code-2": helpValues[1], // AV
-    "help-code-3": helpValues[2], // AW
-    "help-code-4": helpValues[3], // AX
-    "help-code-5": helpValues[4], // AZ
-    "help-code-6": helpValues[5], // BA
-    "help-code-7": helpValues[6], // BB
-    "help-code-8": helpValues[7], // BC
-    "help-code-9": helpValues[8], // BD
-    "help-code-10": helpValues[9]// BE
+    "help-code-1": helpValues[0],
+    "help-code-2": helpValues[1],
+    "help-code-3": helpValues[2],
+    "help-code-4": helpValues[3],
+    "help-code-5": helpValues[4],
+    "help-code-6": helpValues[5],
+    "help-code-7": helpValues[6],
+    "help-code-8": helpValues[7],
+    "help-code-9": helpValues[8],
+    "help-code-10": helpValues[9]
   };
-  let totalEncroachment = helpValues[0] + helpValues[1]; // AU+AV
+  let totalEncroachment = helpValues[0] + helpValues[1];
   let totalHelp = sumAY;
   let totalMotorcycleSeized = sumBF;
 
 
   // --- 6. Recovery & Seizure Inventory (BG to BK, BN to BT) ---
   let recoveryCards = {};
-  // BG to BK (Code-1 to Code-5)
-  for (let i = 59; i <= 63; i++) { // BG=59 to BK=63
+  for (let i = 59; i <= 63; i++) { // BG to BK
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 58}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  // BN to BT (Code-6 to Code-12)
-  for (let i = 66; i <= 72; i++) { // BN=66 to BT=72
+  for (let i = 66; i <= 72; i++) { // BN to BT
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalBullets = filteredData.reduce((acc, r) => acc + getVal(r, "BL"), 0);
   let totalCartridges = filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0);
-  let totalWeaponsRecovered = recoveryCards["rec-code-1"] + recoveryCards["rec-code-5"]; // BG + BK
+  let totalWeaponsRecovered = recoveryCards["rec-code-1"] + recoveryCards["rec-code-5"];
 
 
-  // --- 7. Heinous Crime (BU to CF = Code-1 to Code-12) ---
+  // --- 7. Heinous Crime (BU to CF) ---
   let heinousCards = {};
-  for (let i = 73; i <= 84; i++) { // BU=73 to CF=84
+  for (let i = 73; i <= 84; i++) { // BU to CF
     let col = columnIndexToLetter(i);
     heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -159,9 +155,9 @@ async function updateDashboard() {
   let totalUnfoiledCrime = filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0);
 
 
-  // --- 8. E-Challan Analysis (CK to CP = 1-6, CS = 7, CT = 8) ---
+  // --- 8. E-Challan Analysis (CK to CT) ---
   let challanCards = {};
-  for (let i = 89; i <= 94; i++) { // CK=89 to CP=94
+  for (let i = 89; i <= 94; i++) { // CK to CP
     let col = columnIndexToLetter(i);
     challanCards[`challan-code-${i - 88}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -171,23 +167,23 @@ async function updateDashboard() {
   let totalAmountImposed = filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0);
 
 
-  // --- 9. PKM Services (CV to DA = 1-6, DC to DI = 7-13) ---
+  // --- 9. PKM Services (CV to DA, DC to DI) ---
   let pkmCards = {};
-  for (let i = 100; i <= 105; i++) { // CV=100 to DA=105
+  for (let i = 100; i <= 105; i++) { // CV to DA
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 99}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  for (let i = 107; i <= 113; i++) { // DC=107 to DI=113
+  for (let i = 107; i <= 113; i++) { // DC to DI
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "BD"), 0);
-  let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC"), + getVal(r, "DF")); // DC + DF
+  let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0);
 
-
-  // --- DOM RENDERING EXAMPLE ---
-  // Aap apne HTML elements mein in values ko is tarah set kar sakte hain:
-  // document.getElementById("total-fir-card").innerText = totalFIR;
-  
   console.log("Dashboard Updated Successfully with all 9 headings mapped!");
 }
+
+// Automatically trigger update on page load
+document.addEventListener("DOMContentLoaded", () => {
+  updateDashboard();
+});
