@@ -62,11 +62,13 @@ async function updateDashboard() {
     return matchUnit && matchYear;
   });
 
-  // --- 1. FIR Analysis (C to AB = Code-1 to Code-27, AC = Total) ---
+  // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
   let firCards = {};
   for (let i = 3; i <= 28; i++) { // C=3 to AB=28
     let col = columnIndexToLetter(i);
-    let codeName = `fir-code-${i - 2}`;
+    let indexNum = i - 2;
+    let paddedIndex = indexNum < 10 ? '0' + indexNum : indexNum;
+    let codeName = `fir-code-${paddedIndex}`;
     firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
