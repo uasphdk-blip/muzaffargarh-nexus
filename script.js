@@ -1,16 +1,16 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwQHWerpE9RNjPY0d_b_79NG3xALDbEzRz57Rt_ZxTssqe-i9wAC-_IIv2SYHGrDd1hrw/exec";
 
-// Global variable to store fetched data so we don't call API on every filter change
+// Global cache to store fetched data and avoid repetitive network calls
 let cachedRawData = [];
 
 async function fetchDashboardData() {
   if (cachedRawData.length > 0) {
-    return cachedRawData; // Return cached data instantly
+    return cachedRawData;
   }
   try {
     let response = await fetch(API_URL);
     let data = await response.json();
-    cachedRawData = data; // Cache it
+    cachedRawData = data;
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -68,12 +68,38 @@ function renderCards(cardMap) {
   }
 }
 
+// Automatically populate unit and year dropdowns based on available sheet data
+function populateDropdowns(rawData) {
+  let unitSelect = document.getElementById("policeUnitSelect");
+  let yearSelect = document.getElementById("yearSelect");
+
+  if (unitSelect) {
+    let currentUnit = unitSelect.value;
+    let units = ["All", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
+    unitSelect.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+    if (units.includes(currentUnit)) unitSelect.value = currentUnit;
+  }
+
+  if (yearSelect) {
+    let currentYear = yearSelect.value;
+    let years = [...new Set(rawData.map(r => String(r.year || r.Year)).filter(Boolean))].sort().reverse();
+    yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+    
+    if (years.includes(currentYear)) {
+      yearSelect.value = currentYear;
+    } else if (years.length > 0) {
+      yearSelect.value = years[0]; // Default to the latest year (e.g. 2026)
+    }
+  }
+}
+
 // Main calculation and rendering function triggered on filter / load
 async function updateDashboard() {
-  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All";
-  let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "2026";
-
   let rawData = await fetchDashboardData();
+  if (!rawData || rawData.length === 0) return;
+
+  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All";
+  let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "";
 
   // Filter data based on UI selectors
   let filteredData = rawData.filter(row => {
@@ -84,7 +110,7 @@ async function updateDashboard() {
 
   // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
   let firCards = {};
-  for (let i = 3; i <= 28; i++) { // C=3 to AB=28
+  for (let i = 3; i <= 28; i++) {
     let col = columnIndexToLetter(i);
     let indexNum = i - 2;
     let codeName = `fir-code-${indexNum}`;
@@ -93,7 +119,6 @@ async function updateDashboard() {
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
   renderCards(firCards);
   updateElementText("total-fir", totalFIR);
-
 
   // --- 2. Accident (AP to AT) ---
   let accAP = filteredData.reduce((acc, r) => acc + getVal(r, "AP"), 0);
@@ -118,7 +143,6 @@ async function updateDashboard() {
   updateElementText("total-casualties-died", totalCasualtiesDied);
   updateElementText("total-injured", totalInjured);
 
-
   // --- 3. PO & CA Without EPP (AD to AF) ---
   let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
   let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
@@ -136,7 +160,6 @@ async function updateDashboard() {
   renderCards(poCaCards);
   updateElementText("total-po", totalPO);
   updateElementText("total-ca", totalCA);
-
 
   // --- 4. E-Police App (AG to AO) ---
   let eppCols = ["AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO"];
@@ -162,7 +185,6 @@ async function updateDashboard() {
   updateElementText("epp-total-po", eppTotalPO);
   updateElementText("epp-total-ca", eppTotalCA);
   updateElementText("epp-total-vehicles", eppTotalVehicles);
-
 
   // --- 5. Help & Other Heads (AU to BE) ---
   let helpCols = ["AU", "AV", "AW", "AX", "AZ", "BA", "BB", "BC", "BD", "BE"];
@@ -191,14 +213,13 @@ async function updateDashboard() {
   updateElementText("total-help", totalHelp);
   updateElementText("total-motorcycle-seized", totalMotorcycleSeized);
 
-
   // --- 6. Recovery & Seizure Inventory (BG to BK, BN to BT) ---
   let recoveryCards = {};
-  for (let i = 59; i <= 63; i++) { // BG to BK
+  for (let i = 59; i <= 63; i++) {
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 58}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  for (let i = 66; i <= 72; i++) { // BN to BT
+  for (let i = 66; i <= 72; i++) {
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -211,10 +232,9 @@ async function updateDashboard() {
   updateElementText("total-cartridges", totalCartridges);
   updateElementText("total-weapons-recovered", totalWeaponsRecovered);
 
-
   // --- 7. Heinous Crime (BU to CF) ---
   let heinousCards = {};
-  for (let i = 73; i <= 84; i++) { // BU to CF
+  for (let i = 73; i <= 84; i++) {
     let col = columnIndexToLetter(i);
     heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -227,10 +247,9 @@ async function updateDashboard() {
   updateElementText("total-foiled-crime", totalFoiledCrime);
   updateElementText("total-unfoiled-crime", totalUnfoiledCrime);
 
-
   // --- 8. E-Challan Analysis (CK to CT) ---
   let challanCards = {};
-  for (let i = 89; i <= 94; i++) { // CK to CP
+  for (let i = 89; i <= 94; i++) {
     let col = columnIndexToLetter(i);
     challanCards[`challan-code-${i - 88}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -243,16 +262,15 @@ async function updateDashboard() {
   updateElementText("total-challans", totalCallans);
   updateElementText("total-amount-imposed", totalAmountImposed);
 
-
   // --- 9. PKM Services (CV to DA, DC to DI) ---
   let pkmCards = {};
-  for (let i = 100; i <= 105; i++) { // CV to DA
+  for (let i = 100; i <= 105; i++) {
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 99}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  for (let i = 107; i <= 113; i++) { // DC to DI
+  for (let i = 107; i <= 113; i++) {
     let col = columnIndexToLetter(i);
-    pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, column) || acc + getVal(r, col), 0); // safe fallback
+    pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0);
   let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0);
@@ -264,14 +282,16 @@ async function updateDashboard() {
   console.log("Dashboard Updated Successfully!");
 }
 
-// Optional: Add a Refresh button handler if you want users to fetch fresh data from Google Sheet manually
-function forceRefreshData() {
-  cachedRawData = []; // Clear cache
-  updateDashboard();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateDashboard();
+// Initialization on Page Load
+document.addEventListener("DOMContentLoaded", async () => {
+  let rawData = await fetchDashboardData();
+  
+  if (rawData.length > 0) {
+    populateDropdowns(rawData);
+    updateDashboard();
+  } else {
+    console.warn("No data received from Google Sheet.");
+  }
 
   let policeUnitSelect = document.getElementById("policeUnitSelect");
   let yearSelect = document.getElementById("yearSelect");
