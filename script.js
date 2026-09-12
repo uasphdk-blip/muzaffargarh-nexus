@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzcBqkqu450V-52fErvu__nsLJw041ypOaOhJbkgyJLLouWrVJrgSTk0BoSeHGphb78mQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz_Uv898BTkrrpnPdUsXEAcWGv3DllR_s1UuKAXSJF5i5jCxUYM-n1lzR84gFbtyKHv1g/exec";
 
 async function fetchDashboardData() {
   try {
