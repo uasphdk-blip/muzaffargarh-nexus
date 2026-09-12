@@ -1,9 +1,16 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbz_Uv898BTkrrpnPdUsXEAcWGv3DllR_s1UuKAXSJF5i5jCxUYM-n1lzR84gFbtyKHv1g/exec";
 
+// Global variable to store fetched data so we don't call API on every filter change
+let cachedRawData = [];
+
 async function fetchDashboardData() {
+  if (cachedRawData.length > 0) {
+    return cachedRawData; // Return cached data instantly
+  }
   try {
     let response = await fetch(API_URL);
     let data = await response.json();
+    cachedRawData = data; // Cache it
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -38,7 +45,6 @@ function updateElementText(baseId, value) {
   let el = document.getElementById(baseId);
   
   if (!el) {
-    // Try variations with and without zero padding (e.g., fir-code-1 vs fir-code-01)
     let parts = baseId.split('-');
     let prefix = parts.slice(0, -1).join('-');
     let numStr = parts[parts.length - 1];
@@ -246,7 +252,7 @@ async function updateDashboard() {
   }
   for (let i = 107; i <= 113; i++) { // DC to DI
     let col = columnIndexToLetter(i);
-    pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+    pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, column) || acc + getVal(r, col), 0); // safe fallback
   }
   let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0);
   let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0);
@@ -256,6 +262,12 @@ async function updateDashboard() {
   updateElementText("total-learner-issued", totalLearnerIssued);
 
   console.log("Dashboard Updated Successfully!");
+}
+
+// Optional: Add a Refresh button handler if you want users to fetch fresh data from Google Sheet manually
+function forceRefreshData() {
+  cachedRawData = []; // Clear cache
+  updateDashboard();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
