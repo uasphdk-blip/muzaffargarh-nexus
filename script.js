@@ -1,9 +1,12 @@
 // Google Apps Script Web App Deployment URL
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTJJzHdINEwYSz--Ql05QTUtYZpsIigxjPGHfG2xO9Gu51v8rozRVgLBDnnnmMG1sqEw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYHq0MuVr612zNPoSAPONF6JrW5HuaI5hmzJtxwCSqcLshkAFOjqslOPfgL0BD5B10Uw/exec";
 
-let activeTarget = null;
-let activeHeadIndex = 1;
-let globalSheetData = [];
+// Safe state container to prevent re-declaration errors
+window.dashboardState = window.dashboardState || {
+    activeTarget: null,
+    activeHeadIndex: 1,
+    globalSheetData: []
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     const loader = document.getElementById('introLoader');
@@ -50,16 +53,16 @@ async function fetchSheetData(unit, year, startM, closeM) {
         console.log("Fetching actual sheet data from:", targetUrl);
         const response = await fetch(targetUrl);
         const result = await response.json();
-        console.log("Google Sheet Response:", result);
+        console.log("Google Sheet Response Received:", result);
         
         if(result && result.status === "success" && Array.isArray(result.data)) {
-            globalSheetData = result.data; 
+            window.dashboardState.globalSheetData = result.data; 
         } else {
-            globalSheetData = [];
+            window.dashboardState.globalSheetData = [];
         }
     } catch (error) {
         console.error("Error fetching Google Sheet data:", error);
-        globalSheetData = [];
+        window.dashboardState.globalSheetData = [];
     }
 }
 
@@ -164,19 +167,18 @@ async function applyFilters() {
     const startM = document.getElementById('startMonthSelect').value;
     const closeM = document.getElementById('closeMonthSelect').value;
     
-    // Fetch data based on newly selected unit and filters
     await fetchSheetData(unit, year, startM, closeM);
 
-    if(activeTarget) {
-        loadModule(activeTarget, activeHeadIndex);
+    if(window.dashboardState.activeTarget) {
+        loadModule(window.dashboardState.activeTarget, window.dashboardState.activeHeadIndex);
     } else {
         alert(`✅ Filters Applied & Sheet Data Refreshed!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
     }
 }
 
 function loadModule(moduleName, headIndex) {
-    activeTarget = moduleName;
-    activeHeadIndex = headIndex;
+    window.dashboardState.activeTarget = moduleName;
+    window.dashboardState.activeHeadIndex = headIndex;
     const unit = document.getElementById('policeUnitSelect').value;
     const year = document.getElementById('yearSelect').value;
     const startM = document.getElementById('startMonthSelect').value;
@@ -203,7 +205,6 @@ function loadModule(moduleName, headIndex) {
         let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
         
         subHeads.forEach((head, index) => {
-            // Extract exact value corresponding to column C5:AB index for the selected unit
             let metricVal = getSheetMetricValue(moduleName, index, unit);
             let isTotal = head.toLowerCase().includes('total');
             let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
@@ -236,14 +237,12 @@ function loadModule(moduleName, headIndex) {
     }
 }
 
-// Extracts value from the fetched sheet data based on module name, column index (C=0, D=1...), and unit
 function getSheetMetricValue(moduleName, colIndex, unit) {
-    if (!globalSheetData || globalSheetData.length === 0) {
+    if (!window.dashboardState.globalSheetData || window.dashboardState.globalSheetData.length === 0) {
         return 0;
     }
 
-    // Find row matching the current unit and module
-    let matchedRow = globalSheetData.find(row => 
+    let matchedRow = window.dashboardState.globalSheetData.find(row => 
         row && row.module === moduleName && (row.unit === unit || unit.includes("All Units") || row.unit === "All")
     );
 
@@ -257,9 +256,9 @@ function getSheetMetricValue(moduleName, colIndex, unit) {
 }
 
 function exportReport() {
-    if(!activeTarget) {
+    if(!window.dashboardState.activeTarget) {
         alert("⚠️ Please select a Performance Head before exporting telemetry reports.");
         return;
     }
-    alert(`📥 Secure Telemetry Report for [ ${activeTarget} ] exported successfully to local archive.`);
+    alert(`📥 Secure Telemetry Report for [ ${window.dashboardState.activeTarget} ] exported successfully to local archive.`);
 }
