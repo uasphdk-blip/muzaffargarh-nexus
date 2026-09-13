@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwQHWerpE9RNjPY0d_b_79NG3xALDbEzRz57Rt_ZxTssqe-i9wAC-_IIv2SYHGrDd1hrw/exec";
 
-// Global immutable cache
+// Global immutable cache to protect raw data
 let cachedRawData = [];
 
 async function fetchDashboardData() {
@@ -10,16 +10,16 @@ async function fetchDashboardData() {
   try {
     let response = await fetch(API_URL);
     let data = await response.json();
-    // Ensure we store a clean immutable copy
     cachedRawData = JSON.parse(JSON.stringify(data));
+    console.log("Sheet data fetched successfully. Total rows:", cachedRawData.length);
     return cachedRawData;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching data from API:", error);
     return [];
   }
 }
 
-// Helper to get raw numeric value safely without mutating anything
+// Safely extract numeric values without mutating rows
 function getVal(row, col) {
   if (!row) return 0;
   let val = 0;
@@ -32,7 +32,7 @@ function getVal(row, col) {
   return isNaN(num) ? 0 : num;
 }
 
-// Utility to convert column index to letters
+// Convert column index to letter notation
 function columnIndexToLetter(colIndex) {
   let temp, letter = '';
   while (colIndex > 0) {
@@ -43,7 +43,7 @@ function columnIndexToLetter(colIndex) {
   return letter;
 }
 
-// Smart Helper to find element dynamically
+// Dynamically target HTML element IDs and print debug logs to verify DOM injection
 function updateElementText(baseId, value) {
   let el = document.getElementById(baseId);
   
@@ -60,7 +60,11 @@ function updateElementText(baseId, value) {
   }
 
   if (el) {
-    el.innerText = typeof value === 'number' ? value.toLocaleString() : value;
+    let formattedVal = typeof value === 'number' ? value.toLocaleString() : value;
+    el.innerText = formattedVal;
+    console.log(`[DOM Updated] Element ID: "${baseId}" -> Injected Value: ${formattedVal}`);
+  } else {
+    console.warn(`[DOM Missing] Element with ID "${baseId}" not found in HTML!`);
   }
 }
 
@@ -94,20 +98,21 @@ function populateDropdowns(rawData) {
   }
 }
 
-// Main calculation and rendering function triggered on filter / load
 async function updateDashboard() {
   let rawData = await fetchDashboardData();
-  if (!rawData || rawData.length === 0) return;
+  if (!rawData || rawData.length === 0) {
+    console.warn("Dashboard update skipped: No raw data available.");
+    return;
+  }
 
   populateDropdowns(rawData);
 
   let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All Units (District Wide)";
   let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "";
 
-  // Strict, pure filtering without data mutation
   let filteredData = rawData.filter(row => {
     let rowUnit = String(row.policeUnit || row.Unit || "").trim();
-    let rowYear = String(row.year || r.Year || row.Year || "").trim();
+    let rowYear = String(row.year || row.Year || "").trim();
     
     let matchUnit = (selectedUnit.includes("All") || rowUnit === selectedUnit);
     let matchYear = (!selectedYear || rowYear === String(selectedYear));
@@ -115,7 +120,7 @@ async function updateDashboard() {
     return matchUnit && matchYear;
   });
 
-  console.log(`[Dashboard Debug] Filter -> Unit: ${selectedUnit}, Year: ${selectedYear}, Matching Rows:`, filteredData.length);
+  console.log(`[Filter Applied] Unit: "${selectedUnit}" | Year: "${selectedYear}" | Matching Rows: ${filteredData.length}`);
 
   // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
   let firCards = {};
@@ -123,8 +128,7 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     let indexNum = i - 2;
     let codeName = `fir-code-${indexNum}`;
-    let sumVal = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    firCards[codeName] = sumVal;
+    firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
   renderCards(firCards);
@@ -137,45 +141,36 @@ async function updateDashboard() {
   let accAS = filteredData.reduce((acc, r) => acc + getVal(r, "AS"), 0);
   let accAT = filteredData.reduce((acc, r) => acc + getVal(r, "AT"), 0);
 
-  let accidentCards = {
+  renderCards({
     "acc-code-1": accAP,
     "acc-code-2": accAQ,
     "acc-code-3": accAR,
     "acc-code-4": accAS,
     "acc-code-5": accAT
-  };
-  let totalAccidents = accAP + accAS;
-  let totalCasualtiesDied = accAQ;
-  let totalInjured = accAR + accAT;
-
-  renderCards(accidentCards);
-  updateElementText("total-accidents", totalAccidents);
-  updateElementText("total-casualties-died", totalCasualtiesDied);
-  updateElementText("total-injured", totalInjured);
+  });
+  updateElementText("total-accidents", accAP + accAS);
+  updateElementText("total-casualties-died", accAQ);
+  updateElementText("total-injured", accAR + accAT);
 
   // --- 3. PO & CA Without EPP (AD to AF) ---
   let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
   let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
   let sumAF = filteredData.reduce((acc, r) => acc + getVal(r, "AF"), 0);
 
-  let poCaCards = {
+  renderCards({
     "poca-code-1": sumAD + sumAE,
     "poca-code-2": sumAD,
     "poca-code-3": sumAE,
     "poca-code-4": sumAF
-  };
-  let totalPO = sumAD + sumAE;
-  let totalCA = sumAF;
-
-  renderCards(poCaCards);
-  updateElementText("total-po", totalPO);
-  updateElementText("total-ca", totalCA);
+  });
+  updateElementText("total-po", sumAD + sumAE);
+  updateElementText("total-ca", sumAF);
 
   // --- 4. E-Police App (AG to AO) ---
   let eppCols = ["AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO"];
   let eppValues = eppCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
   
-  let eppCards = {
+  renderCards({
     "epp-code-1": eppValues[0],
     "epp-code-2": eppValues[1],
     "epp-code-3": eppValues[2] + eppValues[3],
@@ -186,15 +181,10 @@ async function updateDashboard() {
     "epp-code-8": eppValues[6],
     "epp-code-9": eppValues[7],
     "epp-code-10": eppValues[8]
-  };
-  let eppTotalPO = eppValues[2] + eppValues[3];
-  let eppTotalCA = eppValues[4];
-  let eppTotalVehicles = eppValues[6] + eppValues[7] + eppValues[8];
-
-  renderCards(eppCards);
-  updateElementText("epp-total-po", eppTotalPO);
-  updateElementText("epp-total-ca", eppTotalCA);
-  updateElementText("epp-total-vehicles", eppTotalVehicles);
+  });
+  updateElementText("epp-total-po", eppValues[2] + eppValues[3]);
+  updateElementText("epp-total-ca", eppValues[4]);
+  updateElementText("epp-total-vehicles", eppValues[6] + eppValues[7] + eppValues[8]);
 
   // --- 5. Help & Other Heads (AU to BE) ---
   let helpCols = ["AU", "AV", "AW", "AX", "AZ", "BA", "BB", "BC", "BD", "BE"];
@@ -202,7 +192,7 @@ async function updateDashboard() {
   let sumAY = filteredData.reduce((acc, r) => acc + getVal(r, "AY"), 0);
   let sumBF = filteredData.reduce((acc, r) => acc + getVal(r, "BF"), 0);
 
-  let helpCards = {
+  renderCards({
     "help-code-1": helpValues[0],
     "help-code-2": helpValues[1],
     "help-code-3": helpValues[2],
@@ -213,15 +203,10 @@ async function updateDashboard() {
     "help-code-8": helpValues[7],
     "help-code-9": helpValues[8],
     "help-code-10": helpValues[9]
-  };
-  let totalEncroachment = helpValues[0] + helpValues[1];
-  let totalHelp = sumAY;
-  let totalMotorcycleSeized = sumBF;
-
-  renderCards(helpCards);
-  updateElementText("total-encroachment", totalEncroachment);
-  updateElementText("total-help", totalHelp);
-  updateElementText("total-motorcycle-seized", totalMotorcycleSeized);
+  });
+  updateElementText("total-encroachment", helpValues[0] + helpValues[1]);
+  updateElementText("total-help", sumAY);
+  updateElementText("total-motorcycle-seized", sumBF);
 
   // --- 6. Recovery & Seizure Inventory (BG to BK, BN to BT) ---
   let recoveryCards = {};
@@ -233,14 +218,10 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  let totalBullets = filteredData.reduce((acc, r) => acc + getVal(r, "BL"), 0);
-  let totalCartridges = filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0);
-  let totalWeaponsRecovered = (recoveryCards["rec-code-1"] || 0) + (recoveryCards["rec-code-5"] || 0);
-
   renderCards(recoveryCards);
-  updateElementText("total-bullets", totalBullets);
-  updateElementText("total-cartridges", totalCartridges);
-  updateElementText("total-weapons-recovered", totalWeaponsRecovered);
+  updateElementText("total-bullets", filteredData.reduce((acc, r) => acc + getVal(r, "BL"), 0));
+  updateElementText("total-cartridges", filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0));
+  updateElementText("total-weapons-recovered", (recoveryCards["rec-code-1"] || 0) + (recoveryCards["rec-code-5"] || 0));
 
   // --- 7. Heinous Crime (BU to CF) ---
   let heinousCards = {};
@@ -248,14 +229,10 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  let totalHeinousReported = filteredData.reduce((acc, r) => acc + getVal(r, "CG"), 0);
-  let totalFoiledCrime = filteredData.reduce((acc, r) => acc + getVal(r, "CH"), 0);
-  let totalUnfoiledCrime = filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0);
-
   renderCards(heinousCards);
-  updateElementText("total-heinous-reported", totalHeinousReported);
-  updateElementText("total-foiled-crime", totalFoiledCrime);
-  updateElementText("total-unfoiled-crime", totalUnfoiledCrime);
+  updateElementText("total-heinous-reported", filteredData.reduce((acc, r) => acc + getVal(r, "CG"), 0));
+  updateElementText("total-foiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CH"), 0));
+  updateElementText("total-unfoiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0));
 
   // --- 8. E-Challan Analysis (CK to CT) ---
   let challanCards = {};
@@ -265,12 +242,9 @@ async function updateDashboard() {
   }
   challanCards["challan-code-7"] = filteredData.reduce((acc, r) => acc + getVal(r, "CS"), 0);
   challanCards["challan-code-8"] = filteredData.reduce((acc, r) => acc + getVal(r, "CT"), 0);
-  let totalCallans = filteredData.reduce((acc, r) => acc + getVal(r, "CJ"), 0);
-  let totalAmountImposed = filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0);
-
   renderCards(challanCards);
-  updateElementText("total-challans", totalCallans);
-  updateElementText("total-amount-imposed", totalAmountImposed);
+  updateElementText("total-challans", filteredData.reduce((acc, r) => acc + getVal(r, "CJ"), 0));
+  updateElementText("total-amount-imposed", filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0));
 
   // --- 9. PKM Services (CV to DA, DC to DI) ---
   let pkmCards = {};
@@ -282,32 +256,21 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  let totalPKMServices = filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0);
-  let totalLearnerIssued = filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0);
-
   renderCards(pkmCards);
-  updateElementText("total-pkm-services", totalPKMServices);
-  updateElementText("total-learner-issued", totalLearnerIssued);
+  updateElementText("total-pkm-services", filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0));
+  updateElementText("total-learner-issued", filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0));
 
-  console.log("Dashboard Updated Successfully with Consistent Values!");
+  console.log("Dashboard rendering complete. All cards updated successfully.");
 }
 
-// Initialization on Page Load & Filter Changes
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOM fully loaded. Initializing dashboard script...");
   await fetchDashboardData();
   await updateDashboard();
 
   let policeUnitSelect = document.getElementById("policeUnitSelect");
   let yearSelect = document.getElementById("yearSelect");
 
-  if (policeUnitSelect) {
-    policeUnitSelect.addEventListener("change", () => {
-      updateDashboard();
-    });
-  }
-  if (yearSelect) {
-    yearSelect.addEventListener("change", () => {
-      updateDashboard();
-    });
-  }
+  if (policeUnitSelect) policeUnitSelect.addEventListener("change", updateDashboard);
+  if (yearSelect) yearSelect.addEventListener("change", updateDashboard);
 });
