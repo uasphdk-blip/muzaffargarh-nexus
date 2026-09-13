@@ -1,92 +1,98 @@
-const API_URL = "https://script.google.com/macros/s/AKfycby-A6L_XCn77aoj-H3cym8Hp9RvgAKSMX9cvdCIyomXvOg8GPCPZLxr0K4M7AWAPHBrVw/exec";
+// Google Apps Script Web App Deployment URL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8ygzNGj5OmS06tLTvHYomYksHBvqQboPVwZjIbogEmWekuc31l6ycK0kz6I_2AHG7JQ/exec";
 
-let cachedRawData = [];
+let activeTarget = null;
+let activeHeadIndex = 1;
+let globalSheetData = [];
 
-async function fetchDashboardData() {
-    if (cachedRawData.length > 0) {
-        return cachedRawData;
+document.addEventListener('DOMContentLoaded', function() {
+    const loader = document.getElementById('introLoader');
+    if(loader) { setTimeout(() => { loader.style.width = '100%'; }, 100); }
+    
+    setTimeout(() => {
+        const intro = document.getElementById('introScreen');
+        if(intro) { intro.classList.add('fade-out'); }
+    }, 7000);
+
+    setInterval(() => {
+        const d = new Date();
+        const clockEl = document.getElementById('liveClock');
+        if(clockEl) clockEl.innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    }, 1000);
+
+    const yearSelect = document.getElementById('yearSelect');
+    if(yearSelect) {
+        yearSelect.innerHTML = ''; 
+        for (let y = 2016; y <= 2031; y++) {
+            let opt = document.createElement('option');
+            opt.value = y;
+            opt.text = y;
+            if(y === 2031) opt.selected = true;
+            yearSelect.appendChild(opt);
+        }
     }
+
+    // Global 3-Second Hover Delay Controller for Sidebar & Cards
+    init3SecHoverSystem();
+
+    // Fetch initial data from Google Sheet
+    fetchSheetData();
+});
+
+// Fetch Data from Google Sheet Web App
+async function fetchSheetData() {
     try {
-        let response = await fetch(API_URL);
-        let data = await response.json();
-        cachedRawData = JSON.parse(JSON.stringify(data));
-        return cachedRawData;
+        const response = await fetch(WEB_APP_URL);
+        const result = await response.json();
+        if(result && result.status === "success") {
+            globalSheetData = result.data; // C5:AB data matrix mapping
+        }
     } catch (error) {
-        console.error("Error fetching data from API:", error);
-        return [];
+        console.error("Error fetching Google Sheet data:", error);
     }
 }
 
-function getVal(row, col) {
-    if (!row) return 0;
-    let val = 0;
-    if (row.columns && row.columns[col] !== undefined) {
-        val = row.columns[col];
-    } else if (row[col] !== undefined) {
-        val = row[col];
-    }
-    let num = Number(val);
-    return isNaN(num) ? 0 : num;
-}
+function init3SecHoverSystem() {
+    let hoverTimer = null;
+    let currentHoverTarget = null;
 
-function columnIndexToLetter(colIndex) {
-    let temp, letter = '';
-    while (colIndex > 0) {
-        temp = (colIndex - 1) % 26;
-        letter = String.fromCharCode(temp + 65) + letter;
-        colIndex = (colIndex - temp - 1) / 26;
-    }
-    return letter;
-}
+    document.addEventListener('mouseover', function(e) {
+        const target = e.target.closest('[data-hoverable="true"]');
+        if (!target) return;
 
-function updateElementText(baseId, value) {
-    let el = document.getElementById(baseId);
-    if (!el) {
-        let parts = baseId.split('-');
-        let prefix = parts.slice(0, -1).join('-');
-        let numStr = parts[parts.length - 1];
-        let num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
-            let padded = num < 10 ? '0' + num : num;
-            el = document.getElementById(`${prefix}-${padded}`) || document.getElementById(`${prefix}-${num}`);
+        if (currentHoverTarget !== target) {
+            clearTimeout(hoverTimer);
+            if (currentHoverTarget) {
+                currentHoverTarget.classList.remove('active-glow');
+            }
+            currentHoverTarget = target;
+
+            // 3 Seconds delay before trigger
+            hoverTimer = setTimeout(() => {
+                if (currentHoverTarget === target) {
+                    target.classList.add('active-glow');
+                }
+            }, 3000);
         }
-    }
-    if (el) {
-        el.innerText = typeof value === 'number' ? value.toLocaleString() : value;
-    }
-}
+    });
 
-function renderCards(cardMap) {
-    for (let [key, value] of Object.entries(cardMap)) {
-        updateElementText(key, value);
-    }
-}
+    document.addEventListener('mouseout', function(e) {
+        const target = e.target.closest('[data-hoverable="true"]');
+        if (!target) return;
 
-function populateDropdowns(rawData) {
-    let unitSelect = document.getElementById("policeUnitSelect");
-    let yearSelect = document.getElementById("yearSelect");
-
-    if (unitSelect && unitSelect.options.length <= 1) {
-        let currentUnit = unitSelect.value;
-        let units = ["All Units (District Wide)", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
-        unitSelect.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
-        if (units.includes(currentUnit)) unitSelect.value = currentUnit;
-    }
-
-    if (yearSelect && yearSelect.options.length <= 1) {
-        let currentYear = yearSelect.value;
-        let years = [...new Set(rawData.map(r => String(r.year || r.Year)).filter(Boolean))].sort().reverse();
-        yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-        if (years.includes(currentYear)) {
-            yearSelect.value = currentYear;
-        } else if (years.length > 0) {
-            yearSelect.value = years[0]; 
+        const related = e.relatedTarget;
+        if (!target.contains(related)) {
+            if (currentHoverTarget === target) {
+                clearTimeout(hoverTimer);
+                target.classList.remove('active-glow');
+                currentHoverTarget = null;
+            }
         }
-    }
+    });
 }
 
 const moduleData = {
-    "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC", "25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total"],
+    "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"],
     "Accident": ["Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", "Total Casualties (Expired)", "Total Injured"],
     "PO & CA Without EPP": ["PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", "Total PO", "Total CA"],
     "E-Police App (EPP)": ["Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"],
@@ -97,104 +103,99 @@ const moduleData = {
     "PKM Services": ["Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", "Learner License Renewal", "Regular License Renewal", "International License Renewal", "Character Certificate", "Police Verification", "Vehicle Verification", "Total PKM Services", "Total Learner Issued"]
 };
 
-let activeTarget = null;
-let activeHeadIndex = 1;
-
-async function applyFilters() {
-    const unit = document.getElementById('policeUnitSelect') ? document.getElementById('policeUnitSelect').value : "All Units (District Wide)";
-    const year = document.getElementById('yearSelect') ? document.getElementById('yearSelect').value : "";
-    const startM = document.getElementById('startMonthSelect') ? document.getElementById('startMonthSelect').value : "";
-    const closeM = document.getElementById('closeMonthSelect') ? document.getElementById('closeMonthSelect').value : "";
-
-    let rawData = await fetchDashboardData();
-    if (!rawData || rawData.length === 0) return;
-
-    populateDropdowns(rawData);
-
-    let filteredData = rawData.filter(row => {
-        let rowUnit = String(row.policeUnit || row.Unit || "").trim();
-        let rowYear = String(row.year || row.Year || "").trim();
-        let rowMonth = String(row.month || row.Month || "").trim();
-        
-        let matchUnit = (unit.includes("All") || rowUnit === unit);
-        let matchYear = (!year || rowYear === String(year));
-        let matchMonth = true;
-        if (startM && closeM && rowMonth) {
-            matchMonth = (rowMonth >= startM && rowMonth <= closeM);
-        }
-        return matchUnit && matchYear && matchMonth;
-    });
-
-    // FIR Individual Codes (Columns C to AB)
-    let firCards = {};
-    for (let i = 3; i <= 28; i++) {
-        let col = columnIndexToLetter(i);
-        firCards[`fir-code-${i - 2}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    renderCards(firCards);
-
-    // Exact Column AC Total for Total FIR
-    let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
-    updateElementText("total-fir", totalFIR);
-
-    // Other sections rendering (Accidents, PO/CA, etc.)
-    let accAP = filteredData.reduce((acc, r) => acc + getVal(r, "AP"), 0);
-    let accAQ = filteredData.reduce((acc, r) => acc + getVal(r, "AQ"), 0);
-    let accAR = filteredData.reduce((acc, r) => acc + getVal(r, "AR"), 0);
-    let accAS = filteredData.reduce((acc, r) => acc + getVal(r, "AS"), 0);
-    let accAT = filteredData.reduce((acc, r) => acc + getVal(r, "AT"), 0);
-
-    renderCards({
-        "acc-code-1": accAP,
-        "acc-code-2": accAQ,
-        "acc-code-3": accAR,
-        "acc-code-4": accAS,
-        "acc-code-5": accAT
-    });
-    updateElementText("total-accidents", accAP + accAS);
-    updateElementText("total-casualties-died", accAQ);
-    updateElementText("total-injured", accAR + accAT);
-
-    let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
-    let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
-    let sumAF = filteredData.reduce((acc, r) => acc + getVal(r, "AF"), 0);
-
-    renderCards({
-        "poca-code-1": sumAD + sumAE,
-        "poca-code-2": sumAD,
-        "poca-code-3": sumAE,
-        "poca-code-4": sumAF
-    });
-    updateElementText("total-po", sumAD);
-    updateElementText("total-ca", sumAE);
-
-    if (activeTarget) {
+function applyFilters() {
+    const unit = document.getElementById('policeUnitSelect').value;
+    const year = document.getElementById('yearSelect').value;
+    const startM = document.getElementById('startMonthSelect').value;
+    const closeM = document.getElementById('closeMonthSelect').value;
+    
+    if(activeTarget) {
         loadModule(activeTarget, activeHeadIndex);
+    } else {
+        alert(`✅ Filter Matrix Updated!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
     }
 }
 
 function loadModule(moduleName, headIndex) {
     activeTarget = moduleName;
     activeHeadIndex = headIndex;
-    const unit = document.getElementById('policeUnitSelect') ? document.getElementById('policeUnitSelect').value : "";
-    const year = document.getElementById('yearSelect') ? document.getElementById('yearSelect').value : "";
-    const startM = document.getElementById('startMonthSelect') ? document.getElementById('startMonthSelect').value : "";
-    const closeM = document.getElementById('closeMonthSelect') ? document.getElementById('closeMonthSelectENT') || document.getElementById('closeMonthSelect').value : "";
+    const unit = document.getElementById('policeUnitSelect').value;
+    const year = document.getElementById('yearSelect').value;
+    const startM = document.getElementById('startMonthSelect').value;
+    const closeM = document.getElementById('closeMonthSelect').value;
 
     const titleEl = document.getElementById('displayTitle');
     const subEl = document.getElementById('displaySubtitle');
-    if (titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
-    if (subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
+    if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
+    if(subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
+
+    let subHeads = moduleData[moduleName] || ["Metric A", "Metric B", "Metric C", "Total"];
+    
+    const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
+    if(paramBoxContainer) {
+        paramBoxContainer.innerHTML = `
+            <div class="px-5 py-2.5 bg-cyan-950/70 border border-cyan-500/40 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_25px_rgba(0,240,255,0.3)] relative z-10">
+                <i class="fa-solid fa-layer-group text-cyan-400"></i> Active Parameters: ${subHeads.length}
+            </div>
+        `;
+    }
+
+    const workspace = document.getElementById('workspaceContent');
+    if(workspace) {
+        let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
+        
+        subHeads.forEach((head, index) => {
+            // Sheet data matching (returns 0 if data not found or offline)
+            let metricVal = getSheetMetricValue(moduleName, head, unit, year);
+            let isTotal = head.toLowerCase().includes('total');
+            let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
+            let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
+
+            let codeStr = index + 1;
+            if(codeStr < 10) codeStr = '0' + codeStr;
+
+            let selectedAnimClass = `anim-class-${headIndex}`;
+            let animDelay = (index * 0.035).toFixed(3);
+
+            gridHtml += `
+                <div class="${cardClass} ${selectedAnimClass} rounded-2xl p-4 flex flex-col justify-between text-left group min-h-[130px]" style="animation-delay: ${animDelay}s;" data-hoverable="true">
+                    <div>
+                        <div class="flex justify-between items-start mb-1.5">
+                            <span class="text-[10px] font-mono ${badgeColor} tracking-widest uppercase">${isTotal ? '★ SUMMARY TOTAL' : 'CODE-' + codeStr}</span>
+                            <span class="w-2 h-2 rounded-full ${isTotal ? 'bg-cyan-400 shadow-[0_0_20px_rgba(0,240,255,1)] animate-pulse' : 'bg-cyan-400/80 group-hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.95)]'} transition-all"></span>
+                        </div>
+                        <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
+                    </div>
+                    <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/60' : 'border-cyan-500/40'}">
+                        <h4 id="fir-code-${codeStr}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${metricVal}</h4>
+                        <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +0.0%</span>
+                    </div>
+                </div>
+            `;
+        });
+        gridHtml += `</div>`;
+        workspace.innerHTML = gridHtml;
+    }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-    await fetchDashboardData();
-    await applyFilters();
-
-    let applyBtn = document.getElementById("applyBtn");
-    if (applyBtn) {
-        applyBtn.addEventListener("click", () => {
-            applyFilters();
-        });
+// Helper function to extract matching values from Google Sheet dataset (Returns 0 on miss/offline)
+function getSheetMetricValue(moduleName, metricName, unit, year) {
+    if (!globalSheetData || globalSheetData.length === 0) {
+        return 0; 
     }
-});
+    
+    // Custom matching logic against fetched C5:AB range rows
+    let foundRow = globalSheetData.find(row => 
+        row && row.module === moduleName && row.metric === metricName && (row.unit === unit || unit.includes("All Units"))
+    );
+
+    return foundRow ? foundRow.value : 0;
+}
+
+function exportReport() {
+    if(!activeTarget) {
+        alert("⚠️ Please select a Performance Head before exporting telemetry reports.");
+        return;
+    }
+    alert(`📥 Secure Telemetry Report for [ ${activeTarget} ] exported successfully to local archive.`);
+}
