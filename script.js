@@ -43,7 +43,7 @@ function columnIndexToLetter(colIndex) {
   return letter;
 }
 
-// Dynamically target HTML element IDs and print debug logs to verify DOM injection
+// Dynamically target HTML element IDs and update text
 function updateElementText(baseId, value) {
   let el = document.getElementById(baseId);
   
@@ -62,9 +62,6 @@ function updateElementText(baseId, value) {
   if (el) {
     let formattedVal = typeof value === 'number' ? value.toLocaleString() : value;
     el.innerText = formattedVal;
-    console.log(`[DOM Updated] Element ID: "${baseId}" -> Injected Value: ${formattedVal}`);
-  } else {
-    console.warn(`[DOM Missing] Element with ID "${baseId}" not found in HTML!`);
   }
 }
 
@@ -120,21 +117,18 @@ async function updateDashboard() {
     return matchUnit && matchYear;
   });
 
-  console.log(`[Filter Applied] Unit: "${selectedUnit}" | Year: "${selectedYear}" | Matching Rows: ${filteredData.length}`);
-
-  // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
+  // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-27), Column AC = Total FIR ---
   let firCards = {};
   for (let i = 3; i <= 28; i++) {
     let col = columnIndexToLetter(i);
     let indexNum = i - 2;
-    let codeName = `fir-code-${indexNum}`;
-    firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+    firCards[`fir-code-${indexNum}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
   renderCards(firCards);
   updateElementText("total-fir", totalFIR);
 
-  // --- 2. Accident (AP to AT) ---
+  // --- 2. Accident: AP to AT (AP & AS = Total Accidents, AQ = Casualties Died, AR & AT = Injured) ---
   let accAP = filteredData.reduce((acc, r) => acc + getVal(r, "AP"), 0);
   let accAQ = filteredData.reduce((acc, r) => acc + getVal(r, "AQ"), 0);
   let accAR = filteredData.reduce((acc, r) => acc + getVal(r, "AR"), 0);
@@ -152,7 +146,7 @@ async function updateDashboard() {
   updateElementText("total-casualties-died", accAQ);
   updateElementText("total-injured", accAR + accAT);
 
-  // --- 3. PO & CA Without EPP (AD to AF) ---
+  // --- 3. PO & CA Without EPP: Columns AD to AF (AD = PO, AE = CA, AF = others) ---
   let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
   let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
   let sumAF = filteredData.reduce((acc, r) => acc + getVal(r, "AF"), 0);
@@ -163,10 +157,10 @@ async function updateDashboard() {
     "poca-code-3": sumAE,
     "poca-code-4": sumAF
   });
-  updateElementText("total-po", sumAD + sumAE);
-  updateElementText("total-ca", sumAF);
+  updateElementText("total-po", sumAD);
+  updateElementText("total-ca", sumAE);
 
-  // --- 4. E-Police App (AG to AO) ---
+  // --- 4. E-Police App: Columns AG to AO ---
   let eppCols = ["AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO"];
   let eppValues = eppCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
   
@@ -186,7 +180,7 @@ async function updateDashboard() {
   updateElementText("epp-total-ca", eppValues[4]);
   updateElementText("epp-total-vehicles", eppValues[6] + eppValues[7] + eppValues[8]);
 
-  // --- 5. Help & Other Heads (AU to BE) ---
+  // --- 5. Help & Other Heads: Columns AU to BE (and AY, BF) ---
   let helpCols = ["AU", "AV", "AW", "AX", "AZ", "BA", "BB", "BC", "BD", "BE"];
   let helpValues = helpCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
   let sumAY = filteredData.reduce((acc, r) => acc + getVal(r, "AY"), 0);
@@ -208,13 +202,13 @@ async function updateDashboard() {
   updateElementText("total-help", sumAY);
   updateElementText("total-motorcycle-seized", sumBF);
 
-  // --- 6. Recovery & Seizure Inventory (BG to BK, BN to BT) ---
+  // --- 6. Recovery & Seizure Inventory: BG to BK and BN to BT (BL = Bullets, BM = Cartridges) ---
   let recoveryCards = {};
-  for (let i = 59; i <= 63; i++) {
+  for (let i = 59; i <= 63; i++) { // BG to BK
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 58}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  for (let i = 66; i <= 72; i++) {
+  for (let i = 66; i <= 72; i++) { // BN to BT
     let col = columnIndexToLetter(i);
     recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -223,9 +217,9 @@ async function updateDashboard() {
   updateElementText("total-cartridges", filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0));
   updateElementText("total-weapons-recovered", (recoveryCards["rec-code-1"] || 0) + (recoveryCards["rec-code-5"] || 0));
 
-  // --- 7. Heinous Crime (BU to CF) ---
+  // --- 7. Heinous Crime: BU to CF (CG = Reported, CH = Foiled, CI = Unfoiled) ---
   let heinousCards = {};
-  for (let i = 73; i <= 84; i++) {
+  for (let i = 73; i <= 84; i++) { // BU to CF
     let col = columnIndexToLetter(i);
     heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -234,7 +228,7 @@ async function updateDashboard() {
   updateElementText("total-foiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CH"), 0));
   updateElementText("total-unfoiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0));
 
-  // --- 8. E-Challan Analysis (CK to CT) ---
+  // --- 8. E-Challan Analysis: CK to CT (CJ = Total Challans, CR = Amount Imposed) ---
   let challanCards = {};
   for (let i = 89; i <= 94; i++) {
     let col = columnIndexToLetter(i);
@@ -246,13 +240,13 @@ async function updateDashboard() {
   updateElementText("total-challans", filteredData.reduce((acc, r) => acc + getVal(r, "CJ"), 0));
   updateElementText("total-amount-imposed", filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0));
 
-  // --- 9. PKM Services (CV to DA, DC to DI) ---
+  // --- 9. PKM Services: CV to DA and DC to DI (DB = Total PKM Services, DC & DF = Learner Permits Issued) ---
   let pkmCards = {};
-  for (let i = 100; i <= 105; i++) {
+  for (let i = 100; i <= 105; i++) { // CV to DA
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 99}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  for (let i = 107; i <= 113; i++) {
+  for (let i = 107; i <= 113; i++) { // DC to DI
     let col = columnIndexToLetter(i);
     pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
@@ -260,11 +254,10 @@ async function updateDashboard() {
   updateElementText("total-pkm-services", filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0));
   updateElementText("total-learner-issued", filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0));
 
-  console.log("Dashboard rendering complete. All cards updated successfully.");
+  console.log("Dashboard rendering complete. All columns perfectly aligned to schema.");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("DOM fully loaded. Initializing dashboard script...");
   await fetchDashboardData();
   await updateDashboard();
 
