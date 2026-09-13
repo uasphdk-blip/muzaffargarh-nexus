@@ -737,6 +737,7 @@
 
             // Global 3-Second Hover Delay Controller for Sidebar & Cards
             init3SecHoverSystem();
+            loadSheetData();
         });
 
         function init3SecHoverSystem() {
@@ -794,6 +795,152 @@
         let activeTarget = null;
         let activeHeadIndex = 1;
 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxsjzjso_Yfopgc8AK8LguuvVrO1P_mxwP9Vc1OPxQkikBdbNkWuZ1baK2syMkeMGG9sA/exec";
+        const MONTH_ORDER = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        let allSheetRows = [];
+        let sheetReady = false;
+
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch(API_URL, { method: "GET", cache: "no-store", redirect: "follow" });
+                const data = await response.json();
+                return Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                return [];
+            }
+        }
+
+        function getVal(row, col) {
+            const raw = row.columns ? row.columns[col] : 0;
+            const num = Number(raw);
+            return Number.isFinite(num) ? num : 0;
+        }
+
+        function columnIndexToLetter(colIndex) {
+            let temp, letter = "";
+            while (colIndex > 0) {
+                temp = (colIndex - 1) % 26;
+                letter = String.fromCharCode(temp + 65) + letter;
+                colIndex = (colIndex - temp - 1) / 26;
+            }
+            return letter;
+        }
+
+        function sumCol(rows, col) {
+            return rows.reduce((acc, r) => acc + getVal(r, col), 0);
+        }
+
+        async function loadSheetData() {
+            allSheetRows = await fetchDashboardData();
+            sheetReady = allSheetRows.length > 0;
+            if (sheetReady) {
+                const yearEl = document.getElementById("yearSelect");
+                if (yearEl) {
+                    const years = [...new Set(allSheetRows.map((r) => String(r.year)))].sort();
+                    const hasCurrent = allSheetRows.some((r) => String(r.year) === String(yearEl.value));
+                    if (!hasCurrent && years.length && [...yearEl.options].some((o) => o.value === years[years.length - 1])) {
+                        yearEl.value = years[years.length - 1];
+                    }
+                }
+            }
+            fillSheetCards();
+        }
+
+        function getFilteredRows() {
+            const unitEl = document.getElementById("policeUnitSelect");
+            const yearEl = document.getElementById("yearSelect");
+            const startEl = document.getElementById("startMonthSelect");
+            const closeEl = document.getElementById("closeMonthSelect");
+            if (!unitEl || !yearEl || !startEl || !closeEl) return [];
+
+            const unit = unitEl.value;
+            const year = String(yearEl.value);
+            const startIdx = MONTH_ORDER.indexOf(startEl.value);
+            const closeIdx = MONTH_ORDER.indexOf(closeEl.value);
+            const lo = Math.min(startIdx === -1 ? 0 : startIdx, closeIdx === -1 ? 11 : closeIdx);
+            const hi = Math.max(startIdx === -1 ? 0 : startIdx, closeIdx === -1 ? 11 : closeIdx);
+            const allUnits = unit === "All Units (District Wide)" || unit === "All Punjab" || unit === "All";
+
+            return allSheetRows.filter((row) => {
+                const station = String(row.policeUnit || "");
+                const matchUnit = allUnits || station === unit;
+                const matchYear = String(row.year) === year;
+                const monthIdx = MONTH_ORDER.indexOf(String(row.month || ""));
+                const matchMonth = monthIdx === -1 ? true : (monthIdx >= lo && monthIdx <= hi);
+                return matchUnit && matchYear && matchMonth;
+            });
+        }
+
+        function getModuleValues(moduleName, rows) {
+            if (moduleName === "FIR Analysis") {
+                const vals = [];
+                for (let i = 3; i <= 28; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                vals.push(sumCol(rows, "AC"));
+                return vals;
+            }
+            if (moduleName === "Accident") {
+                const ap = sumCol(rows, "AP"), aq = sumCol(rows, "AQ"), ar = sumCol(rows, "AR");
+                const asv = sumCol(rows, "AS"), at = sumCol(rows, "AT");
+                return [ap, aq, ar, asv, at, ap + asv, aq, ar + at];
+            }
+            if (moduleName === "PO & CA Without EPP") {
+                const ad = sumCol(rows, "AD"), ae = sumCol(rows, "AE"), af = sumCol(rows, "AF");
+                return [ad + ae, ad, ae, af, ad + ae, af];
+            }
+            if (moduleName === "E-Police App (EPP)") {
+                const ag = sumCol(rows, "AG"), ah = sumCol(rows, "AH");
+                const ai = sumCol(rows, "AI"), aj = sumCol(rows, "AJ"), ak = sumCol(rows, "AK");
+                const al = sumCol(rows, "AL"), am = sumCol(rows, "AM"), an = sumCol(rows, "AN"), ao = sumCol(rows, "AO");
+                return [ag, ah, ai + aj, ai, aj, ak, al, am, an, ao, ai + aj, ak, am + an + ao];
+            }
+            if (moduleName === "Help & Other Heads") {
+                const au = sumCol(rows, "AU"), av = sumCol(rows, "AV"), aw = sumCol(rows, "AW");
+                const ax = sumCol(rows, "AX"), az = sumCol(rows, "AZ"), ba = sumCol(rows, "BA");
+                const bb = sumCol(rows, "BB"), bc = sumCol(rows, "BC"), bd = sumCol(rows, "BD"), be = sumCol(rows, "BE");
+                return [au, av, aw, ax, az, ba, bb, bc, bd, be, au + av, sumCol(rows, "AY"), sumCol(rows, "BF")];
+            }
+            if (moduleName === "Recovery & Seizure Inventory") {
+                const vals = [];
+                for (let i = 59; i <= 63; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                for (let i = 66; i <= 72; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                vals.push(sumCol(rows, "BL"), sumCol(rows, "BM"));
+                vals.push(vals.slice(0, 5).reduce((a, b) => a + b, 0));
+                return vals;
+            }
+            if (moduleName === "Heinous Crime") {
+                const vals = [];
+                for (let i = 73; i <= 84; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                vals.push(sumCol(rows, "CG"), sumCol(rows, "CH"), sumCol(rows, "CI"));
+                return vals;
+            }
+            if (moduleName === "E-Challan Analysis") {
+                const vals = [];
+                for (let i = 89; i <= 94; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                vals.push(sumCol(rows, "CS"), sumCol(rows, "CT"), sumCol(rows, "CJ"), sumCol(rows, "CR"));
+                return vals;
+            }
+            if (moduleName === "PKM Services") {
+                const vals = [];
+                for (let i = 100; i <= 105; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                for (let i = 107; i <= 113; i++) vals.push(sumCol(rows, columnIndexToLetter(i)));
+                vals.push(sumCol(rows, "DJ"), sumCol(rows, "DC") + sumCol(rows, "DF"));
+                return vals;
+            }
+            return [];
+        }
+
+        function fillSheetCards() {
+            if (!sheetReady || !activeTarget) return;
+            const values = getModuleValues(activeTarget, getFilteredRows());
+            values.forEach((val, index) => {
+                let codeStr = index + 1;
+                if (codeStr < 10) codeStr = "0" + codeStr;
+                const el = document.getElementById("fir-code-" + codeStr);
+                if (el) el.innerText = Number(val).toLocaleString();
+            });
+        }
+
         function applyFilters() {
             const unit = document.getElementById('policeUnitSelect').value;
             const year = document.getElementById('yearSelect').value;
@@ -836,7 +983,6 @@
                 let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
                 
                 subHeads.forEach((head, index) => {
-                    let randomVal = Math.floor(Math.random() * 850) + 15;
                     let isTotal = head.toLowerCase().includes('total');
                     let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
                     let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
@@ -857,7 +1003,7 @@
                                 <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
                             </div>
                             <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/60' : 'border-cyan-500/40'}">
-                               <h4 id="fir-code-${codeStr}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${randomValueGenerator(randomVal)}</h4>
+                               <h4 id="fir-code-${codeStr}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">0</h4>
                                 <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +4.2%</span>
                             </div>
                         </div>
@@ -865,11 +1011,8 @@
                 });
                 gridHtml += `</div>`;
                 workspace.innerHTML = gridHtml;
+                fillSheetCards();
             }
-        }
-
-        function randomValueGenerator(val) {
-            return val;
         }
 
         function exportReport() {
@@ -880,6 +1023,5 @@
             alert(`📥 Secure Telemetry Report for [ ${activeTarget} ] exported successfully to local archive.`);
         }
     </script>
-    <script src="script.js"></script>
 </body>
 </html>
