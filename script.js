@@ -124,7 +124,9 @@ async function updateDashboard() {
     let indexNum = i - 2;
     firCards[`fir-code-${indexNum}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
-  let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
+  
+  // Column AC (Index 29) ka exact total nikalne ke liye
+  let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, columnIndexToLetter(29)), 0);
   
   renderCards(firCards);
   updateElementText("total-fir", totalFIR);
