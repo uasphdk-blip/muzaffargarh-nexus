@@ -42,13 +42,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // Fetch Data from Google Sheet Web App
 async function fetchSheetData() {
     try {
+        console.log("Fetching data from Google Sheet...");
         const response = await fetch(WEB_APP_URL);
         const result = await response.json();
-        if(result && result.status === "success") {
-            globalSheetData = result.data; // C5:AB data matrix mapping
+        console.log("Google Sheet Response Received:", result);
+        
+        if(result && result.status === "success" && Array.isArray(result.data)) {
+            globalSheetData = result.data; 
+        } else {
+            globalSheetData = [];
         }
     } catch (error) {
         console.error("Error fetching Google Sheet data:", error);
+        globalSheetData = [];
     }
 }
 
@@ -145,7 +151,7 @@ function loadModule(moduleName, headIndex) {
         let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
         
         subHeads.forEach((head, index) => {
-            // Sheet data matching (returns 0 if data not found or offline)
+            // Strict sheet lookup: returns 0 if data is missing or offline
             let metricVal = getSheetMetricValue(moduleName, head, unit, year);
             let isTotal = head.toLowerCase().includes('total');
             let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
@@ -178,18 +184,17 @@ function loadModule(moduleName, headIndex) {
     }
 }
 
-// Helper function to extract matching values from Google Sheet dataset (Returns 0 on miss/offline)
+// Strict lookup helper: returns 0 if globalSheetData is empty or match is not found
 function getSheetMetricValue(moduleName, metricName, unit, year) {
     if (!globalSheetData || globalSheetData.length === 0) {
         return 0; 
     }
     
-    // Custom matching logic against fetched C5:AB range rows
     let foundRow = globalSheetData.find(row => 
         row && row.module === moduleName && row.metric === metricName && (row.unit === unit || unit.includes("All Units"))
     );
 
-    return foundRow ? foundRow.value : 0;
+    return (foundRow && foundRow.value !== undefined && foundRow.value !== null) ? foundRow.value : 0;
 }
 
 function exportReport() {
