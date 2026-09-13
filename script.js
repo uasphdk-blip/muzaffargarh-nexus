@@ -1,6 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbwQHWerpE9RNjPY0d_b_79NG3xALDbEzRz57Rt_ZxTssqe-i9wAC-_IIv2SYHGrDd1hrw/exec";
 
-// Global cache to store fetched data and avoid repetitive network calls
+// Global immutable cache
 let cachedRawData = [];
 
 async function fetchDashboardData() {
@@ -10,23 +10,26 @@ async function fetchDashboardData() {
   try {
     let response = await fetch(API_URL);
     let data = await response.json();
-    cachedRawData = data;
-    return data;
+    // Ensure we store a clean immutable copy
+    cachedRawData = JSON.parse(JSON.stringify(data));
+    return cachedRawData;
   } catch (error) {
     console.error("Error fetching data:", error);
     return [];
   }
 }
 
-// Helper to sum columns safely
+// Helper to get raw numeric value safely without mutating anything
 function getVal(row, col) {
+  if (!row) return 0;
   let val = 0;
   if (row.columns && row.columns[col] !== undefined) {
     val = row.columns[col];
   } else if (row[col] !== undefined) {
     val = row[col];
   }
-  return Number(val) || 0;
+  let num = Number(val);
+  return isNaN(num) ? 0 : num;
 }
 
 // Utility to convert column index to letters
@@ -40,7 +43,7 @@ function columnIndexToLetter(colIndex) {
   return letter;
 }
 
-// Smart Helper to find element dynamically (supports both Code-1 and Code-01 formats)
+// Smart Helper to find element dynamically
 function updateElementText(baseId, value) {
   let el = document.getElementById(baseId);
   
@@ -61,26 +64,24 @@ function updateElementText(baseId, value) {
   }
 }
 
-// Helper to render a group of cards
 function renderCards(cardMap) {
   for (let [key, value] of Object.entries(cardMap)) {
     updateElementText(key, value);
   }
 }
 
-// Automatically populate unit and year dropdowns based on available sheet data
 function populateDropdowns(rawData) {
   let unitSelect = document.getElementById("policeUnitSelect");
   let yearSelect = document.getElementById("yearSelect");
 
-  if (unitSelect) {
+  if (unitSelect && unitSelect.options.length <= 1) {
     let currentUnit = unitSelect.value;
     let units = ["All Units (District Wide)", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
     unitSelect.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
     if (units.includes(currentUnit)) unitSelect.value = currentUnit;
   }
 
-  if (yearSelect) {
+  if (yearSelect && yearSelect.options.length <= 1) {
     let currentYear = yearSelect.value;
     let years = [...new Set(rawData.map(r => String(r.year || r.Year)).filter(Boolean))].sort().reverse();
     yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
@@ -88,7 +89,7 @@ function populateDropdowns(rawData) {
     if (years.includes(currentYear)) {
       yearSelect.value = currentYear;
     } else if (years.length > 0) {
-      yearSelect.value = years[0]; // Default to the latest year (e.g. 2026)
+      yearSelect.value = years[0]; 
     }
   }
 }
@@ -98,15 +99,23 @@ async function updateDashboard() {
   let rawData = await fetchDashboardData();
   if (!rawData || rawData.length === 0) return;
 
-  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All";
+  populateDropdowns(rawData);
+
+  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All Units (District Wide)";
   let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "";
 
-  // Filter data based on UI selectors (Fixed with includes("All"))
+  // Strict, pure filtering without data mutation
   let filteredData = rawData.filter(row => {
-    let matchUnit = (selectedUnit.includes("All") || row.policeUnit === selectedUnit || row.Unit === selectedUnit);
-    let matchYear = (String(row.year) === String(selectedYear) || String(row.Year) === String(selectedYear));
+    let rowUnit = String(row.policeUnit || row.Unit || "").trim();
+    let rowYear = String(row.year || r.Year || row.Year || "").trim();
+    
+    let matchUnit = (selectedUnit.includes("All") || rowUnit === selectedUnit);
+    let matchYear = (!selectedYear || rowYear === String(selectedYear));
+    
     return matchUnit && matchYear;
   });
+
+  console.log(`[Dashboard Debug] Filter -> Unit: ${selectedUnit}, Year: ${selectedYear}, Matching Rows:`, filteredData.length);
 
   // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
   let firCards = {};
@@ -114,7 +123,8 @@ async function updateDashboard() {
     let col = columnIndexToLetter(i);
     let indexNum = i - 2;
     let codeName = `fir-code-${indexNum}`;
-    firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+    let sumVal = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+    firCards[codeName] = sumVal;
   }
   let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
   renderCards(firCards);
@@ -279,23 +289,25 @@ async function updateDashboard() {
   updateElementText("total-pkm-services", totalPKMServices);
   updateElementText("total-learner-issued", totalLearnerIssued);
 
-  console.log("Dashboard Updated Successfully!");
+  console.log("Dashboard Updated Successfully with Consistent Values!");
 }
 
-// Initialization on Page Load
+// Initialization on Page Load & Filter Changes
 document.addEventListener("DOMContentLoaded", async () => {
-  let rawData = await fetchDashboardData();
-  
-  if (rawData.length > 0) {
-    populateDropdowns(rawData);
-    updateDashboard();
-  } else {
-    console.warn("No data received from Google Sheet.");
-  }
+  await fetchDashboardData();
+  await updateDashboard();
 
   let policeUnitSelect = document.getElementById("policeUnitSelect");
   let yearSelect = document.getElementById("yearSelect");
 
-  if (policeUnitSelect) policeUnitSelect.addEventListener("change", updateDashboard);
-  if (yearSelect) yearSelect.addEventListener("change", updateDashboard);
+  if (policeUnitSelect) {
+    policeUnitSelect.addEventListener("change", () => {
+      updateDashboard();
+    });
+  }
+  if (yearSelect) {
+    yearSelect.addEventListener("change", () => {
+      updateDashboard();
+    });
+  }
 });
