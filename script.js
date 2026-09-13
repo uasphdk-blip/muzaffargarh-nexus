@@ -1,5 +1,5 @@
 // Google Apps Script Web App Deployment URL
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTJJzHdINEwYSz--Ql05QTUtYZpsIigxjPGHfG2xO9Gu51v8rozRVgLBDnnnmMG1sqEw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8ygzNGj5OmS06tLTvHYomYksHBvqQboPVwZjIbogEmWekuc31l6ycK0kz6I_2AHG7JQ/exec";
 
 let activeTarget = null;
 let activeHeadIndex = 1;
@@ -39,13 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchSheetData();
 });
 
-// Fetch Data from Google Sheet Web App
-async function fetchSheetData() {
+// Fetch Data from Google Sheet Web App with active filters
+async function fetchSheetData(unit, year, startM, closeM) {
     try {
-        console.log("Fetching data from Google Sheet...");
-        const response = await fetch(WEB_APP_URL);
+        let targetUrl = WEB_APP_URL;
+        if(unit && year) {
+            targetUrl += `?unit=${encodeURIComponent(unit)}&year=${encodeURIComponent(year)}&startMonth=${encodeURIComponent(startM)}&closeMonth=${encodeURIComponent(closeM)}`;
+        }
+
+        console.log("Fetching actual sheet data from:", targetUrl);
+        const response = await fetch(targetUrl);
         const result = await response.json();
-        console.log("Google Sheet Response Received:", result);
+        console.log("Google Sheet Response:", result);
         
         if(result && result.status === "success" && Array.isArray(result.data)) {
             globalSheetData = result.data; 
@@ -97,28 +102,75 @@ function init3SecHoverSystem() {
     });
 }
 
+// Exact 9 Modules Mapping corresponding to Column C5:AB sequence
 const moduleData = {
-    "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"],
-    "Accident": ["Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", "Total Casualties (Expired)", "Total Injured"],
-    "PO & CA Without EPP": ["PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", "Total PO", "Total CA"],
-    "E-Police App (EPP)": ["Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"],
-    "Help & Other Heads": ["Temporary Encroachment", "Permanent Encroachment", "General Help", "1124 Help", "Lost & Found Child", "Cattle Diary", "Reflector", "Motorcycle 550/CRPC", "Motorcycle 115/MVO", "Motorcycle 134/CRPC", "Total Encroachment", "Total Help", "Total Motorcycle Seized"],
-    "Recovery & Seizure Inventory": ["Kalashnikov's Recovered", "Rifle Recovered", "Gun & Carbin Recovered", "Repeater Recovered", "Pistol & Revolver Recovered", "Liquor (Liters)", "Lehn (Liters)", "Poust (KG)", "Opium (Grams)", "Heroin (grams)", "Hashish (grams)", "Chars (grams)", "Total Bullets", "Total Cartridges", "Total Weapons Recovered"],
-    "Heinous Crime": ["Dacoity Robbery with Murder", "Dacoity + Robbery with injury", "Dacoity", "Highway Robbery", "Highway Robbery at Petrol Pump", "M/V Snatching", "Kidnapping", "Murder", "Attempted Murder", "Mobile Snatching", "Shop Robbery", "Police Encounter", "Total Heinous Crime Reported", "Total Foiled Crime Reported", "Total Unfoiled Crime Reported"],
-    "E-Challan Analysis": ["Underage Drivers", "Without Helmet", "Overload Transport", "Overspeeding", "Paid Challans", "Unpaid Challans", "Paid Amount", "Unpaid Amount", "Total Challans", "Total Amount Imposed"],
-    "PKM Services": ["Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", "Learner License Renewal", "Regular License Renewal", "International License Renewal", "Character Certificate", "Police Verification", "Vehicle Verification", "Total PKM Services", "Total Learner Issued"]
+    "FIR Analysis": [
+        "Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", 
+        "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", 
+        "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", 
+        "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", 
+        "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", 
+        "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"
+    ],
+    "Accident": [
+        "Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", 
+        "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", 
+        "Total Casualties (Expired)", "Total Injured"
+    ],
+    "PO & CA Without EPP": [
+        "PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", 
+        "Total PO", "Total CA"
+    ],
+    "E-Police App (EPP)": [
+        "Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", 
+        "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", 
+        "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"
+    ],
+    "Help & Other Heads": [
+        "Temporary Encroachment", "Permanent Encroachment", "General Help", "1124 Help", 
+        "Lost & Found Child", "Cattle Diary", "Reflector", "Motorcycle 550/CRPC", 
+        "Motorcycle 115/MVO", "Motorcycle 134/CRPC", "Total Encroachment", "Total Help", 
+        "Total Motorcycle Seized"
+    ],
+    "Recovery & Seizure Inventory": [
+        "Kalashnikov's Recovered", "Rifle Recovered", "Gun & Carbin Recovered", "Repeater Recovered", 
+        "Pistol & Revolver Recovered", "Liquor (Liters)", "Lehn (Liters)", "Poust (KG)", 
+        "Opium (Grams)", "Heroin (grams)", "Hashish (grams)", "Chars (grams)", 
+        "Total Bullets", "Total Cartridges", "Total Weapons Recovered"
+    ],
+    "Heinous Crime": [
+        "Dacoity Robbery with Murder", "Dacoity + Robbery with injury", "Dacoity", 
+        "Highway Robbery", "Highway Robbery at Petrol Pump", "M/V Snatching", "Kidnapping", 
+        "Murder", "Attempted Murder", "Mobile Snatching", "Shop Robbery", "Police Encounter", 
+        "Total Heinous Crime Reported", "Total Foiled Crime Reported", "Total Unfoiled Crime Reported"
+    ],
+    "E-Challan Analysis": [
+        "Underage Drivers", "Without Helmet", "Overload Transport", "Overspeeding", 
+        "Paid Challans", "Unpaid Challans", "Paid Amount", "Unpaid Amount", 
+        "Total Challans", "Total Amount Imposed"
+    ],
+    "PKM Services": [
+        "Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", 
+        "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", 
+        "Learner License Renewal", "Regular License Renewal", "International License Renewal", 
+        "Character Certificate", "Police Verification", "Vehicle Verification", 
+        "Total PKM Services", "Total Learner Issued"
+    ]
 };
 
-function applyFilters() {
+async function applyFilters() {
     const unit = document.getElementById('policeUnitSelect').value;
     const year = document.getElementById('yearSelect').value;
     const startM = document.getElementById('startMonthSelect').value;
     const closeM = document.getElementById('closeMonthSelect').value;
     
+    // Fetch data based on newly selected unit and filters
+    await fetchSheetData(unit, year, startM, closeM);
+
     if(activeTarget) {
         loadModule(activeTarget, activeHeadIndex);
     } else {
-        alert(`✅ Filter Matrix Updated!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
+        alert(`✅ Filters Applied & Sheet Data Refreshed!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
     }
 }
 
@@ -135,7 +187,7 @@ function loadModule(moduleName, headIndex) {
     if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
     if(subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
 
-    let subHeads = moduleData[moduleName] || ["Metric A", "Metric B", "Metric C", "Total"];
+    let subHeads = moduleData[moduleName] || [];
     
     const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
     if(paramBoxContainer) {
@@ -151,8 +203,8 @@ function loadModule(moduleName, headIndex) {
         let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
         
         subHeads.forEach((head, index) => {
-            // Strict sheet lookup: returns 0 if data is missing or offline
-            let metricVal = getSheetMetricValue(moduleName, head, unit, year);
+            // Extract exact value corresponding to column C5:AB index for the selected unit
+            let metricVal = getSheetMetricValue(moduleName, index, unit);
             let isTotal = head.toLowerCase().includes('total');
             let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
             let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
@@ -184,17 +236,24 @@ function loadModule(moduleName, headIndex) {
     }
 }
 
-// Strict lookup helper: returns 0 if globalSheetData is empty or match is not found
-function getSheetMetricValue(moduleName, metricName, unit, year) {
+// Extracts value from the fetched sheet data based on module name, column index (C=0, D=1...), and unit
+function getSheetMetricValue(moduleName, colIndex, unit) {
     if (!globalSheetData || globalSheetData.length === 0) {
-        return 0; 
+        return 0;
     }
-    
-    let foundRow = globalSheetData.find(row => 
-        row && row.module === moduleName && row.metric === metricName && (row.unit === unit || unit.includes("All Units"))
+
+    // Find row matching the current unit and module
+    let matchedRow = globalSheetData.find(row => 
+        row && row.module === moduleName && (row.unit === unit || unit.includes("All Units") || row.unit === "All")
     );
 
-    return (foundRow && foundRow.value !== undefined && foundRow.value !== null) ? foundRow.value : 0;
+    if (matchedRow && matchedRow.values && Array.isArray(matchedRow.values)) {
+        return matchedRow.values[colIndex] !== undefined && matchedRow.values[colIndex] !== null && matchedRow.values[colIndex] !== "" 
+            ? matchedRow.values[colIndex] 
+            : 0;
+    }
+
+    return 0;
 }
 
 function exportReport() {
