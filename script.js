@@ -1,163 +1,885 @@
-// Web App Deployment URL (Google Apps Script Endpoint)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8ygzNGj5OmS06tLTvHYomYksHBvqQboPVwZjIbogEmWekuc31l6ycK0kz6I_2AHG7JQ/exec";
-
-let activeTarget = null;
-let activeHeadIndex = 1;
-let liveSheetData = {}; // Sheet data cache
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Clock setup
-    setInterval(() => {
-        const d = new Date();
-        const clockEl = document.getElementById('liveClock');
-        if(clockEl) clockEl.innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-    }, 1000);
-
-    // Populate Year Dropdown if present
-    const yearSelect = document.getElementById('yearSelect');
-    if(yearSelect) {
-        yearSelect.innerHTML = ''; 
-        for (let y = 2016; y <= 2031; y++) {
-            let opt = document.createElement('option');
-            opt.value = y;
-            opt.text = y;
-            if(y === 2031) opt.selected = true;
-            yearSelect.appendChild(opt);
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>District Muzaffargarh - Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyberDark: '#050B14',
+                        cyberPanel: 'rgba(13, 22, 38, 0.75)',
+                        cyberNeon: '#00F0FF',
+                        cyberPurple: '#9D00FF',
+                    }
+                }
+            }
         }
-    }
-
-    // 3 Seconds Hover Delay System
-    init3SecHoverSystem();
-
-    // Fetch initial data from Google Sheet
-    fetchDataFromSheet();
-});
-
-// Fetch Live Data from Google Sheets Web App
-async function fetchDataFromSheet() {
-    try {
-        const response = await fetch(WEB_APP_URL);
-        const result = await response.json();
-        if(result && result.data) {
-            liveSheetData = result.data; // C5:AB data mapped here
+    </script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Cinzel:wght@600;700;800&display=stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fixed window height layout locking */
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-    } catch (error) {
-        console.warn("⚠️ Live Sheet connection offline. Using fallback simulation telemetry.", error);
-    }
-}
 
-const moduleData = {
-    "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"],
-    "Accident": ["Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", "Total Casualties (Expired)", "Total Injured"],
-    "PO & CA Without EPP": ["PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", "Total PO", "Total CA"],
-    "E-Police App (EPP)": ["Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"],
-    "Help & Other Heads": ["Temporary Encroachment", "Permanent Encroachment", "General Help", "1124 Help", "Lost & Found Child", "Cattle Diary", "Reflector", "Motorcycle 550/CRPC", "Motorcycle 115/MVO", "Motorcycle 134/CRPC", "Total Encroachment", "Total Help", "Total Motorcycle Seized"],
-    "Recovery & Seizure Inventory": ["Kalashnikov's Recovered", "Rifle Recovered", "Gun & Carbin Recovered", "Repeater Recovered", "Pistol & Revolver Recovered", "Liquor (Liters)", "Lehn (Liters)", "Poust (KG)", "Opium (Grams)", "Heroin (grams)", "Hashish (grams)", "Chars (grams)", "Total Bullets", "Total Cartridges", "Total Weapons Recovered"],
-    "Heinous Crime": ["Dacoity Robbery with Murder", "Dacoity + Robbery with injury", "Dacoity", "Highway Robbery", "Highway Robbery at Petrol Pump", "M/V Snatching", "Kidnapping", "Murder", "Attempted Murder", "Mobile Snatching", "Shop Robbery", "Police Encounter", "Total Heinous Crime Reported", "Total Foiled Crime Reported", "Total Unfoiled Crime Reported"],
-    "E-Challan Analysis": ["Underage Drivers", "Without Helmet", "Overload Transport", "Overspeeding", "Paid Challans", "Unpaid Challans", "Paid Amount", "Unpaid Amount", "Total Challans", "Total Amount Imposed"],
-    "PKM Services": ["Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", "Learner License Renewal", "Regular License Renewal", "International License Renewal", "Character Certificate", "Police Verification", "Vehicle Verification", "Total PKM Services", "Total Learner Issued"]
-};
-
-function applyFilters() {
-    fetchDataFromSheet(); // Refresh data on filter update
-    if(activeTarget) {
-        loadModule(activeTarget, activeHeadIndex);
-    } else {
-        alert("✅ Filter Matrix Updated successfully!");
-    }
-}
-
-function loadModule(moduleName, headIndex) {
-    activeTarget = moduleName;
-    activeHeadIndex = headIndex;
-    
-    // Yahan hum aapke original HTML ke mutabiq ID prefix generate kar rahe hain (e.g. fir-code-, accident-code-)
-    let prefix = moduleName.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-    if(prefix.length > 8) prefix = prefix.substring(0, 4);
-
-    const titleEl = document.getElementById('displayTitle');
-    const subEl = document.getElementById('displaySubtitle');
-    if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
-    if(subEl) subEl.innerText = `Active Module Head Index: 0${headIndex}`;
-
-    let subHeads = moduleData[moduleName] || ["Metric A", "Metric B", "Metric C", "Total"];
-    
-    const workspace = document.getElementById('workspaceContent');
-    if(workspace) {
-        let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full custom-scroll overflow-y-auto p-4 overflow-x-visible flex-1" style="perspective: 1400px;">`;
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .font-php { font-family: 'Cinzel', serif; letter-spacing: 0.15em; }
         
-        subHeads.forEach((head, index) => {
-            let codeNum = index + 1;
-            let codeStr = codeNum < 10 ? '0' + codeNum : codeNum;
-            
-            // Aapke HTML ke standard format ke mutabiq unique ID match banayi gayi hai
-            let htmlTargetId = `${prefix}-code-${codeStr}`;
-            
-            // Google Sheet ya Fallback se data uthana
-            let sheetVal = liveSheetData[head] !== undefined ? liveSheetData[head] : Math.floor(Math.random() * 850) + 15;
-            
-            let isTotal = head.toLowerCase().includes('total');
-            let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
-            let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
-            let animDelay = (index * 0.035).toFixed(3);
+        .cyber-card {
+            background: linear-gradient(135deg, rgba(16, 28, 51, 0.8) 0%, rgba(8, 14, 26, 0.9) 100%);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.35), inset 0 0 25px rgba(0, 240, 255, 0.15);
+        }
 
-            gridHtml += `
-                <div class="${cardClass} rounded-2xl p-4 flex flex-col justify-between text-left group min-h-[130px]" style="animation-delay: ${animDelay}s;" data-hoverable="true">
-                    <div>
-                        <div class="flex justify-between items-start mb-1.5">
-                            <span class="text-[10px] font-mono ${badgeColor} tracking-widest uppercase">${isTotal ? '★ SUMMARY TOTAL' : 'CODE-' + codeStr}</span>
-                            <span class="w-2 h-2 rounded-full ${isTotal ? 'bg-cyan-400 shadow-[0_0_20px_rgba(0,240,255,1)] animate-pulse' : 'bg-cyan-400/80 group-hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.95)]'} transition-all"></span>
-                        </div>
-                        <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
+        .neon-glow-blue { text-shadow: 0 0 25px rgba(0, 240, 255, 0.9); }
+        .php-glow { text-shadow: 0 0 35px rgba(0, 240, 255, 1), 0 0 20px rgba(157, 0, 255, 0.7); }
+
+        .cyber-btn {
+            background: linear-gradient(90deg, rgba(0,240,255,0.15) 0%, rgba(157,0,255,0.15) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+
+        @keyframes borderBeamColors {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animated-header-border {
+            position: relative;
+            background: rgba(8, 16, 32, 0.95);
+            border-radius: 1rem;
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(8, 16, 32, 0.95), rgba(8, 16, 32, 0.95)), linear-gradient(90deg, #00f0ff, #ff0055, #00ff66, #9d00ff, #00f0ff);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 300% 300%;
+            animation: borderBeamColors 5s ease infinite;
+            box-shadow: 0 0 45px rgba(0, 240, 255, 0.45), inset 0 0 25px rgba(255, 0, 85, 0.2);
+        }
+
+        /* --- INTRO SCREEN --- */
+        #introScreen {
+            position: fixed;
+            inset: 0;
+            background: #050B14;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            perspective: 1200px;
+            transform: translateZ(0);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .intro-border-box {
+            position: relative;
+            background: rgba(8, 16, 32, 0.95);
+            border-radius: 1.5rem;
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(8, 16, 32, 0.95), rgba(8, 16, 32, 0.95)), linear-gradient(90deg, #00f0ff, #ff0055, #00ff66, #9d00ff, #00f0ff);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            background-size: 300% 300%;
+            animation: borderBeamColors 5s ease infinite;
+            box-shadow: 0 0 65px rgba(0, 240, 255, 0.55), inset 0 0 35px rgba(0, 240, 255, 0.3);
+            padding: 3rem 4rem;
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .intro-main-heading {
+            will-change: transform, opacity, filter;
+            backface-visibility: hidden;
+            animation: introSplitScatter 7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .split-left-half {
+            display: inline-block;
+            will-change: transform, opacity, filter;
+            animation: scatterLeftHalf 7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .split-right-half {
+            display: inline-block;
+            will-change: transform, opacity, filter;
+            animation: scatterRightHalf 7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes scatterLeftHalf {
+            0% { opacity: 0; transform: translateX(-40px) scale(0.95); filter: blur(8px); }
+            10% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0px); }
+            80% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0px); }
+            92% { opacity: 0.7; transform: translateX(-160vw) scaleX(3) scaleY(0.2) skewX(-45deg); filter: blur(12px); }
+            100% { opacity: 0; transform: translateX(-250vw) scaleX(5) scaleY(0.05) skewX(-70deg); filter: blur(20px); }
+        }
+
+        @keyframes scatterRightHalf {
+            0% { opacity: 0; transform: translateX(40px) scale(0.95); filter: blur(8px); }
+            10% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0px); }
+            80% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0px); }
+            92% { opacity: 0.7; transform: translateX(160vw) scaleX(3) scaleY(0.2) skewX(45deg); filter: blur(12px); }
+            100% { opacity: 0; transform: translateX(250vw) scaleX(5) scaleY(0.05) skewX(70deg); filter: blur(20px); }
+        }
+
+        @keyframes introSplitScatter {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(10px); }
+            10% { opacity: 1; transform: scale(1) translateY(0px); filter: blur(0px); }
+            80% { opacity: 1; transform: scale(1) translateY(0px); filter: blur(0px); }
+            92% { opacity: 0.8; filter: blur(5px); }
+            100% { opacity: 0; filter: blur(15px); }
+        }
+
+        .fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .filter-bar-snake-border {
+            position: relative;
+            background: linear-gradient(to bottom, rgba(30, 58, 95, 0.9) 0%, rgba(16, 32, 56, 0.95) 48%, rgba(8, 16, 30, 0.98) 52%, rgba(12, 22, 38, 0.95) 100%);
+            border-radius: 1rem;
+            border: 1px solid rgba(0, 240, 255, 0.7);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 8px rgba(0, 240, 255, 0.5);
+            overflow: hidden;
+        }
+
+        .svg-border-anim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+
+        @keyframes twoSeekMove {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -2576; }
+        }
+
+        @keyframes headColorCycle {
+            0% { stroke: #00F0FF; filter: drop-shadow(0 0 20px #00F0FF); }
+            33% { stroke: #FF0055; filter: drop-shadow(0 0 20px #FF0055); }
+            66% { stroke: #9D00FF; filter: drop-shadow(0 0 20px #9D00FF); }
+            100% { stroke: #00F0FF; filter: drop-shadow(0 0 20px #00F0FF); }
+        }
+
+        .seek-line-1 { fill: none; stroke: url(#seekGrad1); stroke-width: 4px; stroke-dasharray: 200 2376; stroke-dashoffset: 0; stroke-linecap: round; animation: twoSeekMove 4s linear infinite; }
+        .seek-head-1 { fill: none; stroke-width: 6px; stroke-dasharray: 15 2561; stroke-dashoffset: -200; stroke-linecap: round; animation: twoSeekMove 4s linear infinite, headColorCycle 4s infinite linear; }
+        .seek-line-2 { fill: none; stroke: url(#seekGrad2); stroke-width: 4px; stroke-dasharray: 200 2376; stroke-dashoffset: -1288; stroke-linecap: round; animation: twoSeekMove 4s linear infinite; }
+        .seek-head-2 { fill: none; stroke-width: 6px; stroke-dasharray: 15 2561; stroke-dashoffset: -1488; stroke-linecap: round; animation: twoSeekMove 4s linear infinite, headColorCycle 4s infinite linear; }
+
+        @keyframes circularSpinAndStay {
+            0% { transform: rotate(-360deg) scale(0.2) translateY(80px); opacity: 0; }
+            15% { transform: rotate(0deg) scale(1) translateY(0); opacity: 1; }
+            85% { transform: rotate(0deg) scale(1) translateY(0); opacity: 1; }
+            100% { transform: rotate(360deg) scale(0.2) translateY(-80px); opacity: 0; }
+        }
+
+        .circular-roll-container { animation: circularSpinAndStay 16s infinite cubic-bezier(0.4, 0, 0.2, 1); transform-origin: center center; }
+
+        @keyframes nexusColorCycle {
+            0% { color: #00F0FF; text-shadow: 0 0 15px rgba(0,240,255,0.9); }
+            33% { color: #FF0055; text-shadow: 0 0 20px rgba(255,0,85,1); }
+            66% { color: #9D00FF; text-shadow: 0 0 20px rgba(157,0,255,1); }
+            100% { color: #00F0FF; text-shadow: 0 0 15px rgba(0,240,255,0.9); }
+        }
+        .nexus-color-changer { display: inline-block; animation: nexusColorCycle 4s infinite ease-in-out; }
+
+        @keyframes phpAndSirajSyncAnim {
+            0%, 40% {
+                transform: translateX(0px) scale(1);
+                opacity: 1;
+                filter: blur(0px);
+            }
+            48%, 58% {
+                transform: translateX(350px) scale(0.8);
+                opacity: 0;
+                filter: blur(10px);
+                pointer-events: none;
+            }
+            60% {
+                transform: translateX(-350px) scale(0.8);
+                opacity: 0;
+                filter: blur(10px);
+                pointer-events: none;
+            }
+            72%, 100% {
+                transform: translateX(0px) scale(1);
+                opacity: 1;
+                filter: blur(0px);
+            }
+        }
+
+        .sync-hide-appear {
+            animation: phpAndSirajSyncAnim 25s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity, filter;
+        }
+
+        /* Card entry animations */
+        @keyframes animHead1 { 0% { opacity: 0; transform: perspective(1200px) rotateY(-70deg) translateZ(-50px); filter: blur(6px); } 100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) translateZ(0); filter: blur(0px); } }
+        .anim-class-1 { animation: animHead1 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards; transform-style: preserve-3d; will-change: transform, opacity; }
+
+        @keyframes animHead2 { 0% { opacity: 0; transform: translateY(-50px) scale(0.96); filter: blur(4px); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } }
+        .anim-class-2 { animation: animHead2 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; will-change: transform, opacity; }
+
+        @keyframes animHead3 { 0% { opacity: 0; transform: translateX(-60px) scale(0.95); filter: blur(5px); } 100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0px); } }
+        .anim-class-3 { animation: animHead3 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: transform, opacity; }
+
+        @keyframes animHead4 { 0% { opacity: 0; transform: scale(0.85) translateZ(-80px); filter: blur(8px); } 100% { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px); } }
+        .anim-class-4 { animation: animHead4 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) forwards; will-change: transform, opacity; }
+
+        @keyframes animHead5 { 0% { opacity: 0; transform: translateX(60px) skewX(5deg); filter: blur(4px); } 100% { opacity: 1; transform: translateX(0) skewX(0deg); filter: blur(0px); } }
+        .anim-class-5 { animation: animHead5 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; will-change: transform, opacity; }
+
+        @keyframes animHead6 { 0% { opacity: 0; transform: translateY(40px); filter: blur(10px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0px); } }
+        .anim-class-6 { animation: animHead6 0.9s cubic-bezier(0.2, 1, 0.3, 1) forwards; will-change: transform, opacity; }
+
+        @keyframes animHead7 { 0% { opacity: 0; transform: perspective(1000px) rotateX(30deg) translateY(30px); filter: blur(6px); } 100% { opacity: 1; transform: perspective(1000px) rotateX(0deg) translateY(0); filter: blur(0px); } }
+        .anim-class-7 { animation: animHead7 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-style: preserve-3d; will-change: transform, opacity; }
+
+        @keyframes animHead8 { 0% { opacity: 0; transform: rotate(-45deg) scale(0.8); filter: blur(6px); } 100% { opacity: 1; transform: rotate(0deg) scale(1); filter: blur(0px); } }
+        .anim-class-8 { animation: animHead8 0.9s cubic-bezier(0.2, 1, 0.3, 1) forwards; transform-origin: center center; will-change: transform, opacity; }
+
+        @keyframes animHead9 { 0% { opacity: 0; transform: perspective(1200px) rotateY(60deg) scale(0.92); filter: blur(6px); } 100% { opacity: 1; transform: perspective(1200px) rotateY(0deg) scale(1); filter: blur(0px); } }
+        .anim-class-9 { animation: animHead9 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards; transform-style: preserve-3d; will-change: transform, opacity; }
+
+        /* --- 3-SECOND DELAY SQUEEZE, RELAX & CLEAR GLOW ANIMATION --- */
+        @keyframes hoverSqueezeAndGlow {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 60px rgba(0, 240, 255, 0.4), inset 0 0 25px rgba(0, 240, 255, 0.2);
+            }
+            50% {
+                transform: scale(0.88);
+                box-shadow: 0 0 140px rgba(0, 240, 255, 1), 0 0 80px rgba(157, 0, 255, 0.95), inset 0 0 60px rgba(0, 240, 255, 0.95);
+            }
+            100% {
+                transform: scale(0.93);
+                box-shadow: 0 0 110px rgba(0, 240, 255, 0.95), 0 0 60px rgba(157, 0, 255, 0.85), inset 0 0 45px rgba(0, 240, 255, 0.85);
+            }
+        }
+
+        .box-3d {
+            background: linear-gradient(to bottom, rgba(25, 48, 80, 0.95) 0%, rgba(15, 30, 58, 0.98) 48%, rgba(7, 14, 28, 0.99) 52%, rgba(11, 21, 40, 0.98) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.6);
+            box-shadow: 0 0 55px rgba(0, 240, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 6px rgba(0, 240, 255, 0.5);
+            transition: border-color 0.3s ease;
+            transform-origin: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        /* 3-second delayed active state triggered safely via JS */
+        .box-3d.active-glow { 
+            animation: hoverSqueezeAndGlow 1.1s infinite alternate ease-in-out !important;
+            border-color: rgba(0, 240, 255, 1) !important;
+            z-index: 60; 
+        }
+
+        /* Ensuring Headings remain completely clear, sharp and legible during glow */
+        .box-3d.active-glow h5 { 
+            color: #ffffff !important; 
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+            transition: color 0.3s ease; 
+        }
+        .box-3d.active-glow h4 { 
+            color: #00F0FF !important;
+            text-shadow: 0 0 25px rgba(0, 240, 255, 1), 0 0 10px rgba(255, 255, 255, 0.9); 
+            transition: text-shadow 0.3s ease; 
+        }
+
+        @keyframes totalHoverSqueezeAndGlow {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 70px rgba(0, 240, 255, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.7);
+            }
+            50% {
+                transform: scale(0.88);
+                box-shadow: 0 0 160px rgba(0, 240, 255, 1), 0 0 90px rgba(157, 0, 255, 1), inset 0 0 70px rgba(255, 255, 255, 1);
+            }
+            100% {
+                transform: scale(0.93);
+                box-shadow: 0 0 130px rgba(0, 240, 255, 1), 0 0 70px rgba(157, 0, 255, 0.95), inset 0 0 55px rgba(255, 255, 255, 0.95);
+            }
+        }
+
+        .box-total {
+            background: linear-gradient(to bottom, rgba(0, 240, 255, 0.45) 0%, rgba(157, 0, 255, 0.4) 48%, rgba(10, 15, 30, 0.95) 52%, rgba(20, 10, 40, 0.95) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.9);
+            box-shadow: 0 0 70px rgba(0, 240, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 8px rgba(0, 240, 255, 0.6);
+        }
+        .box-total.active-glow { 
+            animation: totalHoverSqueezeAndGlow 1.1s infinite alternate ease-in-out !important;
+            border-color: rgba(0, 240, 255, 1) !important; 
+            z-index: 60;
+        }
+
+        /* Left Sidebar Main Headings 3-Second Delay Glow & Squeeze */
+        .cyber-btn.active-glow {
+            animation: hoverSqueezeAndGlow 1.1s infinite alternate ease-in-out !important;
+            border-color: rgba(0, 240, 255, 1) !important;
+            z-index: 60;
+        }
+        .cyber-btn.active-glow span {
+            color: #ffffff !important;
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
+        }
+
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .custom-scroll { scrollbar-width: thin; scrollbar-color: rgba(0, 240, 255, 0.4) rgba(5, 11, 20, 0.5); }
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(5, 11, 20, 0.6); border-radius: 6px; margin: 12px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.35); border-radius: 6px; border: 2px solid rgba(5, 11, 20, 0.6); }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.7); }
+    </style>
+</head>
+<body class="bg-cyberDark text-slate-100 flex flex-col grid-bg relative overflow-hidden">
+
+    <!-- Cinematic Intro Screen -->
+    <div id="introScreen">
+        <div class="absolute inset-0 grid-bg pointer-events-none opacity-40"></div>
+        <div class="intro-border-box">
+            <div class="intro-main-heading space-y-5">
+                <div class="space-y-1.5 mb-2 w-full">
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="h-[1px] w-16 bg-gradient-to-r from-transparent to-cyan-400"></span>
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_20px_rgba(0,240,255,1)]"></span>
+                        <span class="h-[1px] w-16 bg-gradient-to-l from-transparent to-cyan-400"></span>
                     </div>
-                    <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/60' : 'border-cyan-500/40'}">
-                        <h4 id="${htmlTargetId}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${sheetVal}</h4>
-                        <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +4.2%</span>
+                    <div>
+                        <span class="split-left-half font-php text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase">
+                            Punjab Highway
+                        </span>
+                        <span class="split-right-half font-php text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase ml-2">
+                            Patrol
+                        </span>
+                    </div>
+                    <div>
+                        <span class="split-left-half text-[10px] md:text-xs font-mono text-cyan-400/80 tracking-[0.4em] uppercase">Command & Operations</span>
+                        <span class="split-right-half text-[10px] md:text-xs font-mono text-cyan-400/80 tracking-[0.4em] uppercase ml-1">Wing</span>
                     </div>
                 </div>
-            `;
-        });
-        gridHtml += `</div>`;
-        workspace.innerHTML = gridHtml;
-    }
-}
 
-// 3 Seconds Hover Delay System (Jaise pehle tha)
-function init3SecHoverSystem() {
-    let hoverTimer = null;
-    let currentHoverTarget = null;
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/50 flex items-center justify-center text-cyan-400 text-2xl shadow-[0_0_30px_rgba(0,240,255,0.5)]">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
 
-    document.addEventListener('mouseover', function(e) {
-        const target = e.target.closest('[data-hoverable="true"]');
-        if (!target) return;
+                <div class="w-full space-y-1">
+                    <div>
+                        <span class="split-left-half font-cyber text-xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
+                            Welcome to
+                        </span>
+                    </div>
+                    <div>
+                        <span class="split-right-half font-cyber text-xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-widest neon-glow-blue uppercase">
+                            Muzaffargarh Nexus
+                        </span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="split-left-half font-cyber text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 uppercase">
+                            Performance
+                        </span>
+                        <span class="split-right-half font-cyber text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 uppercase ml-2">
+                            Board
+                        </span>
+                    </div>
+                </div>
 
-        if (currentHoverTarget !== target) {
-            clearTimeout(hoverTimer);
-            if (currentHoverTarget) {
-                currentHoverTarget.classList.remove('active-glow');
-            }
-            currentHoverTarget = target;
+                <div>
+                    <span class="split-left-half text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase">Initializing Secure Autonomous</span>
+                    <span class="split-right-half text-xs md:text-sm font-mono text-cyan-300/70 tracking-[0.3em] uppercase ml-1">District Grid...</span>
+                </div>
 
-            // Exact 3 Seconds Delay before hover effect activates
-            hoverTimer = setTimeout(() => {
-                if (currentHoverTarget === target) {
-                    target.classList.add('active-glow');
+                <div class="w-48 h-1 bg-slate-800/80 mx-auto rounded-full overflow-hidden relative mt-2">
+                    <div id="introLoader" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-[7000ms] ease-out"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ambient Glowing Orbs -->
+    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[140px] pointer-events-none"></div>
+
+    <!-- Top Header -->
+    <header id="topNavbar" class="cyber-card border-b border-cyan-500/40 z-50 px-6 lg:px-8 py-3.5 flex justify-between items-center shrink-0">
+        <div class="flex items-center space-x-3.5 overflow-hidden">
+            <div class="circular-roll-container flex items-center space-x-3.5">
+                <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-500/50 flex items-center justify-center text-cyan-400 text-lg shadow-[0_0_25px_rgba(0,240,255,0.5)] shrink-0">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="font-cyber font-extrabold text-base md:text-lg tracking-wider text-white neon-glow-blue whitespace-nowrap">
+                        MUZAFFARGARH <span class="nexus-color-changer">NEXUS</span>
+                    </h1>
+                    <p class="text-[9px] text-cyan-300/70 tracking-widest uppercase font-mono">Autonomous District Grid v5.0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER: Punjab Highway Patrol Title -->
+        <div class="hidden lg:flex items-center justify-center overflow-hidden py-1 px-4 sync-hide-appear">
+            <div class="flex flex-col items-center justify-center">
+                <div class="flex items-center gap-2.5">
+                    <span class="h-[1px] w-12 bg-gradient-to-r from-transparent to-cyan-400"></span>
+                    <span class="font-php text-base sm:text-lg xl:text-xl font-extrabold tracking-[0.18em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 php-glow uppercase whitespace-nowrap">
+                        Punjab Highway Patrol
+                    </span>
+                    <span class="h-[1px] w-12 bg-gradient-to-l from-transparent to-cyan-400"></span>
+                </div>
+                <span class="text-[9px] font-mono text-cyan-300/80 tracking-[0.4em] uppercase mt-1">Command & Operations Wing</span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div class="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+                <i class="fa-regular fa-clock text-cyan-400"></i>
+                <span id="liveClock"></span>
+            </div>
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-semibold font-mono shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="hidden sm:inline">SYSTEM SYNCED</span>
+                <span class="sm:hidden">SYNCED</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 lg:p-8 max-w-[1800px] w-full mx-auto flex flex-col gap-6 overflow-hidden">
+        
+        <!-- Top Horizontal Filter Bar -->
+        <section id="filterBar" class="filter-bar-snake-border rounded-2xl p-4 flex flex-col xl:flex-row items-center justify-between gap-4 z-40 backdrop-blur-md shadow-2xl shrink-0">
+            <svg class="svg-border-anim" viewBox="0 0 1200 90" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="seekGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#00F0FF" stop-opacity="0" />
+                        <stop offset="100%" stop-color="#00F0FF" stop-opacity="0.8" />
+                    </linearGradient>
+                    <linearGradient id="seekGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#9D00FF" stop-opacity="0" />
+                        <stop offset="100%" stop-color="#9D00FF" stop-opacity="0.8" />
+                    </linearGradient>
+                </defs>
+                <rect x="2" y="2" width="1196" height="86" rx="14" ry="14" fill="none" stroke="rgba(0,240,255,0.3)" stroke-width="1.5" pathLength="2576" />
+                <rect class="seek-line-1" x="2" y="2" width="1196" height="86" rx="14" ry="14" pathLength="2576" />
+                <rect class="seek-head-1" x="2" y="2" width="1196" height="86" rx="14" ry="14" pathLength="2576" />
+                <rect class="seek-line-2" x="2" y="2" width="1196" height="86" rx="14" ry="14" pathLength="2576" />
+                <rect class="seek-head-2" x="2" y="2" width="1196" height="86" rx="14" ry="14" pathLength="2576" />
+            </svg>
+
+            <div class="w-full xl:w-72 space-y-1.5 relative z-10">
+                <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">SELECT POLICE UNIT</label>
+                <div class="relative">
+                    <select id="policeUnitSelect" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                        <option value="All Units (District Wide)" selected>All Units (District Wide)</option>
+                        <option value="Riaz Abad">Riaz Abad</option>
+                        <option value="Khan Pur">Khan Pur</option>
+                        <option value="Head M. Wala">Head M. Wala</option>
+                        <option value="Jeewana Bangla">Jeewana Bangla</option>
+                        <option value="Ghazi Ghat">Ghazi Ghat</option>
+                        <option value="Head Bakaini">Head Bakaini</option>
+                        <option value="Head Punjnad">Head Punjnad</option>
+                        <option value="Hamzay Wali">Hamzay Wali</option>
+                        <option value="Meer Haji">Meer Haji</option>
+                        <option value="Khander">Khander</option>
+                        <option value="Meerani">Meerani</option>
+                        <option value="Gabbar Arain">Gabbar Arain</option>
+                        <option value="Head Tounsa">Head Tounsa</option>
+                        <option value="Langar Wah">Langar Wah</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <!-- CRAFTED BY SIRAJ SHEIKH BADGE -->
+            <div class="hidden xl:flex items-center px-4 py-1.5 rounded-xl bg-cyan-950/70 border border-cyan-500/40 text-xs font-cyber font-bold bg-gradient-to-r from-cyan-400 via-white to-purple-400 bg-clip-text text-transparent whitespace-nowrap shadow-[0_0_25px_rgba(0,240,255,0.35)] relative z-10 sync-hide-appear">
+                <i class="fa-solid fa-code text-cyan-400 mr-2 text-[10px]"></i> Crafted by Siraj Sheikh
+            </div>
+
+            <div class="flex flex-wrap xl:flex-nowrap items-end gap-3 w-full xl:w-auto justify-end relative z-10">
+                <div class="space-y-1.5 w-28">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">YEAR</label>
+                    <div class="relative">
+                        <select id="yearSelect" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 w-32">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">START MONTH</label>
+                    <div class="relative">
+                        <select id="startMonthSelect" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                            <option value="January" selected>January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 w-32">
+                    <label class="block text-[10px] font-cyber text-cyan-400 font-semibold tracking-wider text-center">CLOSE MONTH</label>
+                    <div class="relative">
+                        <select id="closeMonthSelect" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-2 py-2.5 text-xs text-cyan-200 text-center focus:outline-none focus:border-cyan-400 transition appearance-none cursor-pointer font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December" selected>December</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-cyan-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <button onclick="applyFilters()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold tracking-wider transition flex items-center justify-center gap-2 font-cyber shadow-lg shadow-emerald-600/40 cursor-pointer h-[38px]">
+                    <i class="fa-solid fa-filter"></i> APPLY
+                </button>
+            </div>
+        </section>
+
+        <!-- Lower Split Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1 overflow-hidden pb-4">
+            
+            <!-- Left Sidebar -->
+            <section class="cyber-card rounded-3xl p-5 flex flex-col gap-4 lg:col-span-3 h-full overflow-hidden">
+                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 shrink-0">
+                    <h2 class="font-cyber text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-shield"></i> PERFORMANCE HEADS
+                    </h2>
+                    <span class="text-[10px] bg-cyan-500/15 text-cyan-300 px-2.5 py-0.5 rounded font-mono border border-cyan-500/40 shadow-[0_0_12px_rgba(0,240,255,0.25)]">SECURE</span>
+                </div>
+
+                <div class="space-y-3 custom-scroll overflow-y-auto pr-3 flex-1">
+                    <button onclick="loadModule('FIR Analysis', 1)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(0,240,255,0.35)]">
+                                <i class="fa-solid fa-shield"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors text-left">1. FIR Analysis</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('Accident', 2)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(157,0,255,0.35)]">
+                                <i class="fa-solid fa-car-burst"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-purple-300 transition-colors text-left">2. Accident</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('PO & CA Without EPP', 3)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(16,185,129,0.35)]">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors text-left">3. PO & CA Without EPP</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('E-Police App (EPP)', 4)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(245,158,11,0.35)]">
+                                <i class="fa-solid fa-mobile-screen"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-amber-300 transition-colors text-left">4. E-Police App (EPP)</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('Help & Other Heads', 5)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/40 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(59,130,246,0.35)]">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-blue-300 transition-colors text-left">5. Help & Other Heads</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-blue-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('Recovery & Seizure Inventory', 6)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/40 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(99,102,241,0.35)]">
+                                <i class="fa-solid fa-box-archive"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors text-left">6. Recovery & Seizure Inventory</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-indigo-300 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('Heinous Crime', 7)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(244,63,94,0.35)]">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-rose-300 transition-colors text-left">7. Heinous Crime</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-rose-300 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('E-Challan Analysis', 8)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/40 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(20,184,166,0.35)]">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-teal-300 transition-colors text-left">8. E-Challan Analysis</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-teal-300 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="loadModule('PKM Services', 9)" class="cyber-btn w-full p-3.5 rounded-2xl flex items-center justify-between group cursor-pointer" data-hoverable="true">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-fuchsia-500/15 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 group-hover:scale-110 transition-transform text-sm shadow-[0_0_15px_rgba(217,70,239,0.35)]">
+                                <i class="fa-solid fa-id-card"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white group-hover:text-fuchsia-300 transition-colors text-left">9. PKM Services</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-right text-xs text-fuchsia-300 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Viewport Area -->
+            <section class="lg:col-span-9 cyber-card rounded-3xl p-6 flex flex-col h-full overflow-hidden">
+                <div class="animated-header-border flex flex-col xl:flex-row justify-between items-start xl:items-center p-6 gap-4 backdrop-blur-md z-30 w-full shrink-0">
+                    <div class="w-full xl:w-auto relative z-10">
+                        <h3 id="displayTitle" class="font-cyber text-2xl font-extrabold text-white tracking-wide">SYSTEM STANDBY</h3>
+                        <p id="displaySubtitle" class="text-sm text-cyan-300/80 mt-1.5 font-mono">Waiting for performance head selection...</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full xl:w-auto justify-end relative z-10">
+                        <div id="headerParameterBoxContainer"></div>
+                        <button onclick="exportReport()" class="px-5 py-2.5 bg-cyan-950/70 hover:bg-cyan-900/70 border border-cyan-500/40 rounded-xl text-xs font-semibold text-cyan-300 transition flex items-center gap-2 font-mono cursor-pointer shrink-0 shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+                            <i class="fa-solid fa-file-export text-cyan-400 text-sm"></i> EXPORT REPORT
+                        </button>
+                    </div>
+                </div>
+
+                <div id="workspaceContent" class="flex-1 flex flex-col items-center justify-center p-8 text-center my-auto overflow-hidden">
+                    <div class="w-24 h-24 rounded-3xl bg-cyan-950/40 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-3xl mb-4 shadow-xl shadow-cyan-500/30 animate-pulse">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <h4 class="font-cyber text-white font-bold text-lg tracking-wider">READY FOR PERFORMANCE AUDIT</h4>
+                    <p class="text-slate-400 text-sm max-w-sm mt-2 leading-relaxed">
+                        Select any of the <strong class="text-cyan-400">Performance Heads</strong> from the left sidebar to analyze respective telemetry data and statistics.
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- JavaScript Controller -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('introLoader');
+            if(loader) { setTimeout(() => { loader.style.width = '100%'; }, 100); }
+            
+            setTimeout(() => {
+                const intro = document.getElementById('introScreen');
+                if(intro) { intro.classList.add('fade-out'); }
+            }, 7000);
+
+            setInterval(() => {
+                const d = new Date();
+                const clockEl = document.getElementById('liveClock');
+                if(clockEl) clockEl.innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+            }, 1000);
+
+            const yearSelect = document.getElementById('yearSelect');
+            if(yearSelect) {
+                yearSelect.innerHTML = ''; 
+                for (let y = 2016; y <= 2031; y++) {
+                    let opt = document.createElement('option');
+                    opt.value = y;
+                    opt.text = y;
+                    if(y === 2031) opt.selected = true;
+                    yearSelect.appendChild(opt);
                 }
-            }, 3000);
+            }
+
+            // Global 3-Second Hover Delay Controller for Sidebar & Cards
+            init3SecHoverSystem();
+        });
+
+        function init3SecHoverSystem() {
+            let hoverTimer = null;
+            let currentHoverTarget = null;
+
+            document.addEventListener('mouseover', function(e) {
+                const target = e.target.closest('[data-hoverable="true"]');
+                if (!target) return;
+
+                if (currentHoverTarget !== target) {
+                    clearTimeout(hoverTimer);
+                    if (currentHoverTarget) {
+                        currentHoverTarget.classList.remove('active-glow');
+                    }
+                    currentHoverTarget = target;
+
+                    // 3 Seconds delay before trigger
+                    hoverTimer = setTimeout(() => {
+                        if (currentHoverTarget === target) {
+                            target.classList.add('active-glow');
+                        }
+                    }, 3000);
+                }
+            });
+
+            document.addEventListener('mouseout', function(e) {
+                const target = e.target.closest('[data-hoverable="true"]');
+                if (!target) return;
+
+                // Check if mouse actually left the element boundary
+                const related = e.relatedTarget;
+                if (!target.contains(related)) {
+                    if (currentHoverTarget === target) {
+                        clearTimeout(hoverTimer);
+                        target.classList.remove('active-glow');
+                        currentHoverTarget = null;
+                    }
+                }
+            });
         }
-    });
 
-    document.addEventListener('mouseout', function(e) {
-        const target = e.target.closest('[data-hoverable="true"]');
-        if (!target) return;
+        const moduleData = {
+            "FIR Analysis": ["Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"],
+            "Accident": ["Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", "Total Casualties (Expired)", "Total Injured"],
+            "PO & CA Without EPP": ["PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", "Total PO", "Total CA"],
+            "E-Police App (EPP)": ["Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"],
+            "Help & Other Heads": ["Temporary Encroachment", "Permanent Encroachment", "General Help", "1124 Help", "Lost & Found Child", "Cattle Diary", "Reflector", "Motorcycle 550/CRPC", "Motorcycle 115/MVO", "Motorcycle 134/CRPC", "Total Encroachment", "Total Help", "Total Motorcycle Seized"],
+            "Recovery & Seizure Inventory": ["Kalashnikov's Recovered", "Rifle Recovered", "Gun & Carbin Recovered", "Repeater Recovered", "Pistol & Revolver Recovered", "Liquor (Liters)", "Lehn (Liters)", "Poust (KG)", "Opium (Grams)", "Heroin (grams)", "Hashish (grams)", "Chars (grams)", "Total Bullets", "Total Cartridges", "Total Weapons Recovered"],
+            "Heinous Crime": ["Dacoity Robbery with Murder", "Dacoity + Robbery with injury", "Dacoity", "Highway Robbery", "Highway Robbery at Petrol Pump", "M/V Snatching", "Kidnapping", "Murder", "Attempted Murder", "Mobile Snatching", "Shop Robbery", "Police Encounter", "Total Heinous Crime Reported", "Total Foiled Crime Reported", "Total Unfoiled Crime Reported"],
+            "E-Challan Analysis": ["Underage Drivers", "Without Helmet", "Overload Transport", "Overspeeding", "Paid Challans", "Unpaid Challans", "Paid Amount", "Unpaid Amount", "Total Challans", "Total Amount Imposed"],
+            "PKM Services": ["Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", "Learner License Renewal", "Regular License Renewal", "International License Renewal", "Character Certificate", "Police Verification", "Vehicle Verification", "Total PKM Services", "Total Learner Issued"]
+        };
 
-        const related = e.relatedTarget;
-        if (!target.contains(related)) {
-            if (currentHoverTarget === target) {
-                clearTimeout(hoverTimer);
-                target.classList.remove('active-glow');
-                currentHoverTarget = null;
+        let activeTarget = null;
+        let activeHeadIndex = 1;
+
+        function applyFilters() {
+            const unit = document.getElementById('policeUnitSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const startM = document.getElementById('startMonthSelect').value;
+            const closeM = document.getElementById('closeMonthSelect').value;
+            
+            if(activeTarget) {
+                loadModule(activeTarget, activeHeadIndex);
+            } else {
+                alert(`✅ Filter Matrix Updated!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
             }
         }
-    });
-}
+
+        function loadModule(moduleName, headIndex) {
+            activeTarget = moduleName;
+            activeHeadIndex = headIndex;
+            const unit = document.getElementById('policeUnitSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const startM = document.getElementById('startMonthSelect').value;
+            const closeM = document.getElementById('closeMonthSelect').value;
+
+            const titleEl = document.getElementById('displayTitle');
+            const subEl = document.getElementById('displaySubtitle');
+            if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
+            if(subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
+
+            let subHeads = moduleData[moduleName] || ["Metric A", "Metric B", "Metric C", "Total"];
+            
+            const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
+            if(paramBoxContainer) {
+                paramBoxContainer.innerHTML = `
+                    <div class="px-5 py-2.5 bg-cyan-950/70 border border-cyan-500/40 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_25px_rgba(0,240,255,0.3)] relative z-10">
+                        <i class="fa-solid fa-layer-group text-cyan-400"></i> Active Parameters: ${subHeads.length}
+                    </div>
+                `;
+            }
+
+            const workspace = document.getElementById('workspaceContent');
+            if(workspace) {
+                let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
+                
+                subHeads.forEach((head, index) => {
+                    let randomVal = Math.floor(Math.random() * 850) + 15;
+                    let isTotal = head.toLowerCase().includes('total');
+                    let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
+                    let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
+
+                    let codeStr = index + 1;
+                    if(codeStr < 10) codeStr = '0' + codeStr;
+
+                    let selectedAnimClass = `anim-class-${headIndex}`;
+                    let animDelay = (index * 0.035).toFixed(3);
+
+                    gridHtml += `
+                        <div class="${cardClass} ${selectedAnimClass} rounded-2xl p-4 flex flex-col justify-between text-left group min-h-[130px]" style="animation-delay: ${animDelay}s;" data-hoverable="true">
+                            <div>
+                                <div class="flex justify-between items-start mb-1.5">
+                                    <span class="text-[10px] font-mono ${badgeColor} tracking-widest uppercase">${isTotal ? '★ SUMMARY TOTAL' : 'CODE-' + codeStr}</span>
+                                    <span class="w-2 h-2 rounded-full ${isTotal ? 'bg-cyan-400 shadow-[0_0_20px_rgba(0,240,255,1)] animate-pulse' : 'bg-cyan-400/80 group-hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.95)]'} transition-all"></span>
+                                </div>
+                                <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
+                            </div>
+                            <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/60' : 'border-cyan-500/40'}">
+                               <h4 id="fir-code-${codeStr}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${randomValueGenerator(randomVal)}</h4>
+                                <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +4.2%</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                gridHtml += `</div>`;
+                workspace.innerHTML = gridHtml;
+            }
+        }
+
+        function randomValueGenerator(val) {
+            return val;
+        }
+
+        function exportReport() {
+            if(!activeTarget) {
+                alert("⚠️ Please select a Performance Head before exporting telemetry reports.");
+                return;
+            }
+            alert(`📥 Secure Telemetry Report for [ ${activeTarget} ] exported successfully to local archive.`);
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
