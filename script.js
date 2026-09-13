@@ -117,7 +117,7 @@ async function updateDashboard() {
     return matchUnit && matchYear;
   });
 
- // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-26), Column AC = Total FIR ---
+  // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-26), Column AC = Total FIR ---
   let firCards = {};
   for (let i = 3; i <= 28; i++) {
     let col = columnIndexToLetter(i);
@@ -262,9 +262,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   await fetchDashboardData();
   await updateDashboard();
 
-  let policeUnitSelect = document.getElementById("policeUnitSelect");
-  let yearSelect = document.getElementById("yearSelect");
+  let applyBtn = document.getElementById("applyBtn");
 
-  if (policeUnitSelect) policeUnitSelect.addEventListener("change", updateDashboard);
-  if (yearSelect) yearSelect.addEventListener("change", updateDashboard);
+  if (applyBtn) {
+    applyBtn.addEventListener("click", () => {
+      console.log("Apply button clicked. Updating dashboard...");
+      updateDashboard();
+    });
+  } else {
+    console.warn("Apply button with ID 'applyBtn' not found in HTML!");
+  }
 });
