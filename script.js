@@ -75,7 +75,7 @@ function populateDropdowns(rawData) {
 
   if (unitSelect) {
     let currentUnit = unitSelect.value;
-    let units = ["All", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
+    let units = ["All Units (District Wide)", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
     unitSelect.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
     if (units.includes(currentUnit)) unitSelect.value = currentUnit;
   }
@@ -101,9 +101,9 @@ async function updateDashboard() {
   let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All";
   let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "";
 
-  // Filter data based on UI selectors
+  // Filter data based on UI selectors (Fixed with includes("All"))
   let filteredData = rawData.filter(row => {
-    let matchUnit = (selectedUnit === "All" || row.policeUnit === selectedUnit || row.Unit === selectedUnit);
+    let matchUnit = (selectedUnit.includes("All") || row.policeUnit === selectedUnit || row.Unit === selectedUnit);
     let matchYear = (String(row.year) === String(selectedYear) || String(row.Year) === String(selectedYear));
     return matchUnit && matchYear;
   });
