@@ -117,7 +117,7 @@ async function updateDashboard() {
     return matchUnit && matchYear;
   });
 
-  // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-26), Column AC = Total FIR ---
+ // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-26), Column AC = Total FIR ---
   let firCards = {};
   for (let i = 3; i <= 28; i++) {
     let col = columnIndexToLetter(i);
