@@ -59,6 +59,28 @@ function updateElementText(baseId, value) {
     }
   }
 
+  // Fallback map for module-specific card prefixes if standard ID is not found directly
+  if (!el) {
+    let activeTitle = document.getElementById("displayTitle") ? document.getElementById("displayTitle").innerText.toLowerCase() : "";
+    let altPrefix = "";
+    
+    if (activeTitle.includes("fir")) altPrefix = "fir";
+    else if (activeTitle.includes("accident")) altPrefix = "acc";
+    else if (activeTitle.includes("po & ca")) altPrefix = "poca";
+    else if (activeTitle.includes("e-police")) altPrefix = "epp";
+    else if (activeTitle.includes("help")) altPrefix = "help";
+    else if (activeTitle.includes("recovery")) altPrefix = "rec";
+    else if (activeTitle.includes("heinous")) altPrefix = "heinous";
+    else if (activeTitle.includes("challan")) altPrefix = "challan";
+    else if (activeTitle.includes("pkm")) altPrefix = "pkm";
+
+    if (altPrefix && !baseId.startsWith(altPrefix)) {
+      let parts = baseId.split('-');
+      let num = parts[parts.length - 1];
+      el = document.getElementById(`${altPrefix}-code-${num}`) || document.getElementById(`${altPrefix}-code-0${num}`);
+    }
+  }
+
   if (el) {
     let formattedVal = typeof value === 'number' ? value.toLocaleString() : value;
     el.innerText = formattedVal;
@@ -122,7 +144,7 @@ async function updateDashboard() {
 
   console.log(`[Filter Applied] Unit: "${selectedUnit}" | Year: "${selectedYear}" | Matching Rows: ${filteredData.length}`);
 
-  // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
+  // --- 1. FIR Analysis (C to AB = Code-01 to Code-26, AC = Total FIR) ---
   let firCards = {};
   for (let i = 3; i <= 28; i++) {
     let col = columnIndexToLetter(i);
