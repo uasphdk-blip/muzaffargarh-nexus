@@ -125,8 +125,12 @@ async function updateDashboard() {
     firCards[`fir-code-${indexNum}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
   }
   
-  // Column AC (Index 29) ka exact total nikalne ke liye
-  let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, columnIndexToLetter(29)), 0);
+  // Debugging ke liye check kar rahe hain ke pehli row mein AC column available hai ya nahi
+  if (filteredData.length > 0) {
+    console.log("Sample Row Data:", filteredData[0]);
+  }
+
+  let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
   
   renderCards(firCards);
   updateElementText("total-fir", totalFIR);
