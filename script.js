@@ -1,264 +1,276 @@
-// Google Apps Script Web App Deployment URL
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYHq0MuVr612zNPoSAPONF6JrW5HuaI5hmzJtxwCSqcLshkAFOjqslOPfgL0BD5B10Uw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwYHq0MuVr612zNPoSAPONF6JrW5HuaI5hmzJtxwCSqcLshkAFOjqslOPfgL0BD5B10Uw/exec";
 
-// Safe state container to prevent re-declaration errors
-window.dashboardState = window.dashboardState || {
-    activeTarget: null,
-    activeHeadIndex: 1,
-    globalSheetData: []
-};
+// Global immutable cache to protect raw data
+let cachedRawData = [];
 
-document.addEventListener('DOMContentLoaded', function() {
-    const loader = document.getElementById('introLoader');
-    if(loader) { setTimeout(() => { loader.style.width = '100%'; }, 100); }
+async function fetchDashboardData() {
+  if (cachedRawData.length > 0) {
+    return cachedRawData;
+  }
+  try {
+    let response = await fetch(API_URL);
+    let data = await response.json();
+    cachedRawData = JSON.parse(JSON.stringify(data));
+    console.log("Sheet data fetched successfully. Total rows:", cachedRawData.length);
+    return cachedRawData;
+  } catch (error) {
+    console.error("Error fetching data from API:", error);
+    return [];
+  }
+}
+
+// Safely extract numeric values without mutating rows
+function getVal(row, col) {
+  if (!row) return 0;
+  let val = 0;
+  if (row.columns && row.columns[col] !== undefined) {
+    val = row.columns[col];
+  } else if (row[col] !== undefined) {
+    val = row[col];
+  }
+  let num = Number(val);
+  return isNaN(num) ? 0 : num;
+}
+
+// Convert column index to letter notation
+function columnIndexToLetter(colIndex) {
+  let temp, letter = '';
+  while (colIndex > 0) {
+    temp = (colIndex - 1) % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    colIndex = (colIndex - temp - 1) / 26;
+  }
+  return letter;
+}
+
+// Dynamically target HTML element IDs and print debug logs to verify DOM injection
+function updateElementText(baseId, value) {
+  let el = document.getElementById(baseId);
+  
+  if (!el) {
+    let parts = baseId.split('-');
+    let prefix = parts.slice(0, -1).join('-');
+    let numStr = parts[parts.length - 1];
+    let num = parseInt(numStr, 10);
     
-    setTimeout(() => {
-        const intro = document.getElementById('introScreen');
-        if(intro) { intro.classList.add('fade-out'); }
-    }, 7000);
-
-    setInterval(() => {
-        const d = new Date();
-        const clockEl = document.getElementById('liveClock');
-        if(clockEl) clockEl.innerText = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-    }, 1000);
-
-    const yearSelect = document.getElementById('yearSelect');
-    if(yearSelect) {
-        yearSelect.innerHTML = ''; 
-        for (let y = 2016; y <= 2031; y++) {
-            let opt = document.createElement('option');
-            opt.value = y;
-            opt.text = y;
-            if(y === 2031) opt.selected = true;
-            yearSelect.appendChild(opt);
-        }
+    if (!isNaN(num)) {
+      let padded = num < 10 ? '0' + num : num;
+      el = document.getElementById(`${prefix}-${padded}`) || document.getElementById(`${prefix}-${num}`);
     }
+  }
 
-    // Global 3-Second Hover Delay Controller for Sidebar & Cards
-    init3SecHoverSystem();
+  if (el) {
+    let formattedVal = typeof value === 'number' ? value.toLocaleString() : value;
+    el.innerText = formattedVal;
+    console.log(`[DOM Updated] Element ID: "${baseId}" -> Injected Value: ${formattedVal}`);
+  } else {
+    console.warn(`[DOM Missing] Element with ID "${baseId}" not found in HTML!`);
+  }
+}
 
-    // Fetch initial data from Google Sheet
-    fetchSheetData();
+function renderCards(cardMap) {
+  for (let [key, value] of Object.entries(cardMap)) {
+    updateElementText(key, value);
+  }
+}
+
+function populateDropdowns(rawData) {
+  let unitSelect = document.getElementById("policeUnitSelect");
+  let yearSelect = document.getElementById("yearSelect");
+
+  if (unitSelect && unitSelect.options.length <= 1) {
+    let currentUnit = unitSelect.value;
+    let units = ["All Units (District Wide)", ...new Set(rawData.map(r => r.policeUnit || r.Unit).filter(Boolean))];
+    unitSelect.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+    if (units.includes(currentUnit)) unitSelect.value = currentUnit;
+  }
+
+  if (yearSelect && yearSelect.options.length <= 1) {
+    let currentYear = yearSelect.value;
+    let years = [...new Set(rawData.map(r => String(r.year || r.Year)).filter(Boolean))].sort().reverse();
+    yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+    
+    if (years.includes(currentYear)) {
+      yearSelect.value = currentYear;
+    } else if (years.length > 0) {
+      yearSelect.value = years[0]; 
+    }
+  }
+}
+
+async function updateDashboard() {
+  let rawData = await fetchDashboardData();
+  if (!rawData || rawData.length === 0) {
+    console.warn("Dashboard update skipped: No raw data available.");
+    return;
+  }
+
+  populateDropdowns(rawData);
+
+  let selectedUnit = document.getElementById("policeUnitSelect") ? document.getElementById("policeUnitSelect").value : "All Units (District Wide)";
+  let selectedYear = document.getElementById("yearSelect") ? document.getElementById("yearSelect").value : "";
+
+  let filteredData = rawData.filter(row => {
+    let rowUnit = String(row.policeUnit || row.Unit || "").trim();
+    let rowYear = String(row.year || row.Year || "").trim();
+    
+    let matchUnit = (selectedUnit.includes("All") || rowUnit === selectedUnit);
+    let matchYear = (!selectedYear || rowYear === String(selectedYear));
+    
+    return matchUnit && matchYear;
+  });
+
+  console.log(`[Filter Applied] Unit: "${selectedUnit}" | Year: "${selectedYear}" | Matching Rows: ${filteredData.length}`);
+
+  // --- 1. FIR Analysis (C to AB = Code-01 to Code-27, AC = Total) ---
+  let firCards = {};
+  for (let i = 3; i <= 28; i++) {
+    let col = columnIndexToLetter(i);
+    let indexNum = i - 2;
+    let codeName = `fir-code-${indexNum}`;
+    firCards[codeName] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
+  renderCards(firCards);
+  updateElementText("total-fir", totalFIR);
+
+  // --- 2. Accident (AP to AT) ---
+  let accAP = filteredData.reduce((acc, r) => acc + getVal(r, "AP"), 0);
+  let accAQ = filteredData.reduce((acc, r) => acc + getVal(r, "AQ"), 0);
+  let accAR = filteredData.reduce((acc, r) => acc + getVal(r, "AR"), 0);
+  let accAS = filteredData.reduce((acc, r) => acc + getVal(r, "AS"), 0);
+  let accAT = filteredData.reduce((acc, r) => acc + getVal(r, "AT"), 0);
+
+  renderCards({
+    "acc-code-1": accAP,
+    "acc-code-2": accAQ,
+    "acc-code-3": accAR,
+    "acc-code-4": accAS,
+    "acc-code-5": accAT
+  });
+  updateElementText("total-accidents", accAP + accAS);
+  updateElementText("total-casualties-died", accAQ);
+  updateElementText("total-injured", accAR + accAT);
+
+  // --- 3. PO & CA Without EPP (AD to AF) ---
+  let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
+  let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
+  let sumAF = filteredData.reduce((acc, r) => acc + getVal(r, "AF"), 0);
+
+  renderCards({
+    "poca-code-1": sumAD + sumAE,
+    "poca-code-2": sumAD,
+    "poca-code-3": sumAE,
+    "poca-code-4": sumAF
+  });
+  updateElementText("total-po", sumAD + sumAE);
+  updateElementText("total-ca", sumAF);
+
+  // --- 4. E-Police App (AG to AO) ---
+  let eppCols = ["AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO"];
+  let eppValues = eppCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
+  
+  renderCards({
+    "epp-code-1": eppValues[0],
+    "epp-code-2": eppValues[1],
+    "epp-code-3": eppValues[2] + eppValues[3],
+    "epp-code-4": eppValues[2],
+    "epp-code-5": eppValues[3],
+    "epp-code-6": eppValues[4],
+    "epp-code-7": eppValues[5],
+    "epp-code-8": eppValues[6],
+    "epp-code-9": eppValues[7],
+    "epp-code-10": eppValues[8]
+  });
+  updateElementText("epp-total-po", eppValues[2] + eppValues[3]);
+  updateElementText("epp-total-ca", eppValues[4]);
+  updateElementText("epp-total-vehicles", eppValues[6] + eppValues[7] + eppValues[8]);
+
+  // --- 5. Help & Other Heads (AU to BE) ---
+  let helpCols = ["AU", "AV", "AW", "AX", "AZ", "BA", "BB", "BC", "BD", "BE"];
+  let helpValues = helpCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
+  let sumAY = filteredData.reduce((acc, r) => acc + getVal(r, "AY"), 0);
+  let sumBF = filteredData.reduce((acc, r) => acc + getVal(r, "BF"), 0);
+
+  renderCards({
+    "help-code-1": helpValues[0],
+    "help-code-2": helpValues[1],
+    "help-code-3": helpValues[2],
+    "help-code-4": helpValues[3],
+    "help-code-5": helpValues[4],
+    "help-code-6": helpValues[5],
+    "help-code-7": helpValues[6],
+    "help-code-8": helpValues[7],
+    "help-code-9": helpValues[8],
+    "help-code-10": helpValues[9]
+  });
+  updateElementText("total-encroachment", helpValues[0] + helpValues[1]);
+  updateElementText("total-help", sumAY);
+  updateElementText("total-motorcycle-seized", sumBF);
+
+  // --- 6. Recovery & Seizure Inventory (BG to BK, BN to BT) ---
+  let recoveryCards = {};
+  for (let i = 59; i <= 63; i++) {
+    let col = columnIndexToLetter(i);
+    recoveryCards[`rec-code-${i - 58}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  for (let i = 66; i <= 72; i++) {
+    let col = columnIndexToLetter(i);
+    recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  renderCards(recoveryCards);
+  updateElementText("total-bullets", filteredData.reduce((acc, r) => acc + getVal(r, "BL"), 0));
+  updateElementText("total-cartridges", filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0));
+  updateElementText("total-weapons-recovered", (recoveryCards["rec-code-1"] || 0) + (recoveryCards["rec-code-5"] || 0));
+
+  // --- 7. Heinous Crime (BU to CF) ---
+  let heinousCards = {};
+  for (let i = 73; i <= 84; i++) {
+    let col = columnIndexToLetter(i);
+    heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  renderCards(heinousCards);
+  updateElementText("total-heinous-reported", filteredData.reduce((acc, r) => acc + getVal(r, "CG"), 0));
+  updateElementText("total-foiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CH"), 0));
+  updateElementText("total-unfoiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0));
+
+  // --- 8. E-Challan Analysis (CK to CT) ---
+  let challanCards = {};
+  for (let i = 89; i <= 94; i++) {
+    let col = columnIndexToLetter(i);
+    challanCards[`challan-code-${i - 88}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  challanCards["challan-code-7"] = filteredData.reduce((acc, r) => acc + getVal(r, "CS"), 0);
+  challanCards["challan-code-8"] = filteredData.reduce((acc, r) => acc + getVal(r, "CT"), 0);
+  renderCards(challanCards);
+  updateElementText("total-challans", filteredData.reduce((acc, r) => acc + getVal(r, "CJ"), 0));
+  updateElementText("total-amount-imposed", filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0));
+
+  // --- 9. PKM Services (CV to DA, DC to DI) ---
+  let pkmCards = {};
+  for (let i = 100; i <= 105; i++) {
+    let col = columnIndexToLetter(i);
+    pkmCards[`pkm-code-${i - 99}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  for (let i = 107; i <= 113; i++) {
+    let col = columnIndexToLetter(i);
+    pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+  }
+  renderCards(pkmCards);
+  updateElementText("total-pkm-services", filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0));
+  updateElementText("total-learner-issued", filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0));
+
+  console.log("Dashboard rendering complete. All cards updated successfully.");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOM fully loaded. Initializing dashboard script...");
+  await fetchDashboardData();
+  await updateDashboard();
+
+  let policeUnitSelect = document.getElementById("policeUnitSelect");
+  let yearSelect = document.getElementById("yearSelect");
+
+  if (policeUnitSelect) policeUnitSelect.addEventListener("change", updateDashboard);
+  if (yearSelect) yearSelect.addEventListener("change", updateDashboard);
 });
-
-// Fetch Data from Google Sheet Web App with active filters
-async function fetchSheetData(unit, year, startM, closeM) {
-    try {
-        let targetUrl = WEB_APP_URL;
-        if(unit && year) {
-            targetUrl += `?unit=${encodeURIComponent(unit)}&year=${encodeURIComponent(year)}&startMonth=${encodeURIComponent(startM)}&closeMonth=${encodeURIComponent(closeM)}`;
-        }
-
-        console.log("Fetching actual sheet data from:", targetUrl);
-        const response = await fetch(targetUrl);
-        const result = await response.json();
-        console.log("Google Sheet Response Received:", result);
-        
-        if(result && result.status === "success" && Array.isArray(result.data)) {
-            window.dashboardState.globalSheetData = result.data; 
-        } else {
-            window.dashboardState.globalSheetData = [];
-        }
-    } catch (error) {
-        console.error("Error fetching Google Sheet data:", error);
-        window.dashboardState.globalSheetData = [];
-    }
-}
-
-function init3SecHoverSystem() {
-    let hoverTimer = null;
-    let currentHoverTarget = null;
-
-    document.addEventListener('mouseover', function(e) {
-        const target = e.target.closest('[data-hoverable="true"]');
-        if (!target) return;
-
-        if (currentHoverTarget !== target) {
-            clearTimeout(hoverTimer);
-            if (currentHoverTarget) {
-                currentHoverTarget.classList.remove('active-glow');
-            }
-            currentHoverTarget = target;
-
-            // 3 Seconds delay before trigger
-            hoverTimer = setTimeout(() => {
-                if (currentHoverTarget === target) {
-                    target.classList.add('active-glow');
-                }
-            }, 3000);
-        }
-    });
-
-    document.addEventListener('mouseout', function(e) {
-        const target = e.target.closest('[data-hoverable="true"]');
-        if (!target) return;
-
-        const related = e.relatedTarget;
-        if (!target.contains(related)) {
-            if (currentHoverTarget === target) {
-                clearTimeout(hoverTimer);
-                target.classList.remove('active-glow');
-                currentHoverTarget = null;
-            }
-        }
-    });
-}
-
-// Exact 9 Modules Mapping corresponding to Column C5:AB sequence
-const moduleData = {
-    "FIR Analysis": [
-        "Illicit Arms", "PEHO ¾,4/79", "Narcotics (CNSA)", "279 PPC", "341 PPC", "285 PPC", 
-        "379/411 PPC", "454/457 PPC", "290/291 PPC", "420 PPC", "Amplifieract", 
-        "14 Punjab Sc/ordinance 2015", "97-A MVO", "99A MVO", "112/115/3A/89A MVO", 
-        "506/341/279/353/186 PPC", "Gambling Act", "322/337G/427/279 PPC", "216A PPC", 
-        "170 PPC/25D Telegraphy act", "ALMR", "Act 1958-9 (Beggars)", "Punjab Food Authority Act", 
-        "Punjab Marriage F/Act 2016", "Ehtram-e-Ramzan Act 1981", "Others", "Total FIR"
-    ],
-    "Accident": [
-        "Fatal Accident", "Fatal Accident - Expired", "Fatal Accident - Injured", 
-        "Non-Fatal Accident", "Non-Fatal Accident - Injured", "Total Accidents", 
-        "Total Casualties (Expired)", "Total Injured"
-    ],
-    "PO & CA Without EPP": [
-        "PO Arrested", "PO (A Category)", "PO (B Category)", "CA Arrested", 
-        "Total PO", "Total CA"
-    ],
-    "E-Police App (EPP)": [
-        "Person Checked", "Vehicle Checked", "PO", "PO (A Category)", "PO (B Category)", 
-        "CA", "Stolen Vehicle Recovered", "Motorcycle Recovered", "Car Recovered", 
-        "Other Vehicles Recovered", "Total PO", "Total CA", "Total Vehicle Recovered"
-    ],
-    "Help & Other Heads": [
-        "Temporary Encroachment", "Permanent Encroachment", "General Help", "1124 Help", 
-        "Lost & Found Child", "Cattle Diary", "Reflector", "Motorcycle 550/CRPC", 
-        "Motorcycle 115/MVO", "Motorcycle 134/CRPC", "Total Encroachment", "Total Help", 
-        "Total Motorcycle Seized"
-    ],
-    "Recovery & Seizure Inventory": [
-        "Kalashnikov's Recovered", "Rifle Recovered", "Gun & Carbin Recovered", "Repeater Recovered", 
-        "Pistol & Revolver Recovered", "Liquor (Liters)", "Lehn (Liters)", "Poust (KG)", 
-        "Opium (Grams)", "Heroin (grams)", "Hashish (grams)", "Chars (grams)", 
-        "Total Bullets", "Total Cartridges", "Total Weapons Recovered"
-    ],
-    "Heinous Crime": [
-        "Dacoity Robbery with Murder", "Dacoity + Robbery with injury", "Dacoity", 
-        "Highway Robbery", "Highway Robbery at Petrol Pump", "M/V Snatching", "Kidnapping", 
-        "Murder", "Attempted Murder", "Mobile Snatching", "Shop Robbery", "Police Encounter", 
-        "Total Heinous Crime Reported", "Total Foiled Crime Reported", "Total Unfoiled Crime Reported"
-    ],
-    "E-Challan Analysis": [
-        "Underage Drivers", "Without Helmet", "Overload Transport", "Overspeeding", 
-        "Paid Challans", "Unpaid Challans", "Paid Amount", "Unpaid Amount", 
-        "Total Challans", "Total Amount Imposed"
-    ],
-    "PKM Services": [
-        "Crime Report", "Loss Report", "Voilance Against Women Report", "Copy of FIR", 
-        "Tenants Registration", "Registration of Private Employee (ROPE)", "Learner License Issued", 
-        "Learner License Renewal", "Regular License Renewal", "International License Renewal", 
-        "Character Certificate", "Police Verification", "Vehicle Verification", 
-        "Total PKM Services", "Total Learner Issued"
-    ]
-};
-
-async function applyFilters() {
-    const unit = document.getElementById('policeUnitSelect').value;
-    const year = document.getElementById('yearSelect').value;
-    const startM = document.getElementById('startMonthSelect').value;
-    const closeM = document.getElementById('closeMonthSelect').value;
-    
-    await fetchSheetData(unit, year, startM, closeM);
-
-    if(window.dashboardState.activeTarget) {
-        loadModule(window.dashboardState.activeTarget, window.dashboardState.activeHeadIndex);
-    } else {
-        alert(`✅ Filters Applied & Sheet Data Refreshed!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
-    }
-}
-
-function loadModule(moduleName, headIndex) {
-    window.dashboardState.activeTarget = moduleName;
-    window.dashboardState.activeHeadIndex = headIndex;
-    const unit = document.getElementById('policeUnitSelect').value;
-    const year = document.getElementById('yearSelect').value;
-    const startM = document.getElementById('startMonthSelect').value;
-    const closeM = document.getElementById('closeMonthSelect').value;
-
-    const titleEl = document.getElementById('displayTitle');
-    const subEl = document.getElementById('displaySubtitle');
-    if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
-    if(subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
-
-    let subHeads = moduleData[moduleName] || [];
-    
-    const paramBoxContainer = document.getElementById('headerParameterBoxContainer');
-    if(paramBoxContainer) {
-        paramBoxContainer.innerHTML = `
-            <div class="px-5 py-2.5 bg-cyan-950/70 border border-cyan-500/40 rounded-xl text-xs font-semibold text-cyan-300 flex items-center gap-2 font-mono shrink-0 shadow-[0_0_25px_rgba(0,240,255,0.3)] relative z-10">
-                <i class="fa-solid fa-layer-group text-cyan-400"></i> Active Parameters: ${subHeads.length}
-            </div>
-        `;
-    }
-
-    const workspace = document.getElementById('workspaceContent');
-    if(workspace) {
-        let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full custom-scroll overflow-y-auto p-8 overflow-x-visible flex-1" style="perspective: 1400px;">`;
-        
-        subHeads.forEach((head, index) => {
-            let metricVal = getSheetMetricValue(moduleName, index, unit);
-            let isTotal = head.toLowerCase().includes('total');
-            let cardClass = isTotal ? 'box-3d box-total' : 'box-3d';
-            let badgeColor = isTotal ? 'text-cyan-300 font-bold' : 'text-cyan-400';
-
-            let codeStr = index + 1;
-            if(codeStr < 10) codeStr = '0' + codeStr;
-
-            let selectedAnimClass = `anim-class-${headIndex}`;
-            let animDelay = (index * 0.035).toFixed(3);
-
-            gridHtml += `
-                <div class="${cardClass} ${selectedAnimClass} rounded-2xl p-4 flex flex-col justify-between text-left group min-h-[130px]" style="animation-delay: ${animDelay}s;" data-hoverable="true">
-                    <div>
-                        <div class="flex justify-between items-start mb-1.5">
-                            <span class="text-[10px] font-mono ${badgeColor} tracking-widest uppercase">${isTotal ? '★ SUMMARY TOTAL' : 'CODE-' + codeStr}</span>
-                            <span class="w-2 h-2 rounded-full ${isTotal ? 'bg-cyan-400 shadow-[0_0_20px_rgba(0,240,255,1)] animate-pulse' : 'bg-cyan-400/80 group-hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.95)]'} transition-all"></span>
-                        </div>
-                        <h5 class="text-xs font-semibold ${isTotal ? 'text-white font-bold' : 'text-slate-200'} group-hover:text-cyan-300 transition-colors leading-snug">${head}</h5>
-                    </div>
-                    <div class="flex items-baseline justify-between pt-2.5 mt-2 border-t ${isTotal ? 'border-cyan-500/60' : 'border-cyan-500/40'}">
-                        <h4 id="fir-code-${codeStr}" class="font-cyber text-xl font-bold ${isTotal ? 'text-cyan-300 neon-glow-blue' : 'text-white'} tracking-wider">${metricVal}</h4>
-                        <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-arrow-trend-up"></i> +0.0%</span>
-                    </div>
-                </div>
-            `;
-        });
-        gridHtml += `</div>`;
-        workspace.innerHTML = gridHtml;
-    }
-}
-
-function getSheetMetricValue(moduleName, colIndex, unit) {
-    if (!window.dashboardState.globalSheetData || window.dashboardState.globalSheetData.length === 0) {
-        return 0;
-    }
-
-    let matchedRow = window.dashboardState.globalSheetData.find(row => 
-        row && row.module === moduleName && (row.unit === unit || unit.includes("All Units") || row.unit === "All")
-    );
-
-    if (matchedRow && matchedRow.values && Array.isArray(matchedRow.values)) {
-        return matchedRow.values[colIndex] !== undefined && matchedRow.values[colIndex] !== null && matchedRow.values[colIndex] !== "" 
-            ? matchedRow.values[colIndex] 
-            : 0;
-    }
-
-    return 0;
-}
-
-function exportReport() {
-    if(!window.dashboardState.activeTarget) {
-        alert("⚠️ Please select a Performance Head before exporting telemetry reports.");
-        return;
-    }
-    alert(`📥 Secure Telemetry Report for [ ${window.dashboardState.activeTarget} ] exported successfully to local archive.`);
-}
