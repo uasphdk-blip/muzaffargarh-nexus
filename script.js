@@ -1,6 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwQHWerpE9RNjPY0d_b_79NG3xALDbEzRz57Rt_ZxTssqe-i9wAC-_IIv2SYHGrDd1hrw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby-A6L_XCn77aoj-H3cym8Hp9RvgAKSMX9cvdCIyomXvOg8GPCPZLxr0K4M7AWAPHBrVw/exec";
 
-// Global immutable cache to protect raw data
 let cachedRawData = [];
 
 async function fetchDashboardData() {
@@ -11,7 +10,6 @@ async function fetchDashboardData() {
         let response = await fetch(API_URL);
         let data = await response.json();
         cachedRawData = JSON.parse(JSON.stringify(data));
-        console.log("Sheet data fetched successfully. Total rows:", cachedRawData.length);
         return cachedRawData;
     } catch (error) {
         console.error("Error fetching data from API:", error);
@@ -19,7 +17,6 @@ async function fetchDashboardData() {
     }
 }
 
-// Safely extract numeric values without mutating rows
 function getVal(row, col) {
     if (!row) return 0;
     let val = 0;
@@ -32,7 +29,6 @@ function getVal(row, col) {
     return isNaN(num) ? 0 : num;
 }
 
-// Convert column index to letter notation
 function columnIndexToLetter(colIndex) {
     let temp, letter = '';
     while (colIndex > 0) {
@@ -43,25 +39,20 @@ function columnIndexToLetter(colIndex) {
     return letter;
 }
 
-// Dynamically target HTML element IDs and update text
 function updateElementText(baseId, value) {
     let el = document.getElementById(baseId);
-    
     if (!el) {
         let parts = baseId.split('-');
         let prefix = parts.slice(0, -1).join('-');
         let numStr = parts[parts.length - 1];
         let num = parseInt(numStr, 10);
-        
         if (!isNaN(num)) {
             let padded = num < 10 ? '0' + num : num;
             el = document.getElementById(`${prefix}-${padded}`) || document.getElementById(`${prefix}-${num}`);
         }
     }
-
     if (el) {
-        let formattedVal = typeof value === 'number' ? value.toLocaleString() : value;
-        el.innerText = formattedVal;
+        el.innerText = typeof value === 'number' ? value.toLocaleString() : value;
     }
 }
 
@@ -86,7 +77,6 @@ function populateDropdowns(rawData) {
         let currentYear = yearSelect.value;
         let years = [...new Set(rawData.map(r => String(r.year || r.Year)).filter(Boolean))].sort().reverse();
         yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-        
         if (years.includes(currentYear)) {
             yearSelect.value = currentYear;
         } else if (years.length > 0) {
@@ -117,10 +107,7 @@ async function applyFilters() {
     const closeM = document.getElementById('closeMonthSelect') ? document.getElementById('closeMonthSelect').value : "";
 
     let rawData = await fetchDashboardData();
-    if (!rawData || rawData.length === 0) {
-        console.warn("Dashboard update skipped: No raw data available.");
-        return;
-    }
+    if (!rawData || rawData.length === 0) return;
 
     populateDropdowns(rawData);
 
@@ -131,28 +118,26 @@ async function applyFilters() {
         
         let matchUnit = (unit.includes("All") || rowUnit === unit);
         let matchYear = (!year || rowYear === String(year));
-        
         let matchMonth = true;
         if (startM && closeM && rowMonth) {
             matchMonth = (rowMonth >= startM && rowMonth <= closeM);
         }
-        
         return matchUnit && matchYear && matchMonth;
     });
 
-    // --- 1. FIR Analysis: Columns C to AB (Code-01 to Code-26), Column AC = Total FIR ---
+    // FIR Individual Codes (Columns C to AB)
     let firCards = {};
     for (let i = 3; i <= 28; i++) {
         let col = columnIndexToLetter(i);
-        let indexNum = i - 2;
-        firCards[`fir-code-${indexNum}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
+        firCards[`fir-code-${i - 2}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
     }
-    let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
-    
     renderCards(firCards);
+
+    // Exact Column AC Total for Total FIR
+    let totalFIR = filteredData.reduce((acc, r) => acc + getVal(r, "AC"), 0);
     updateElementText("total-fir", totalFIR);
 
-    // --- 2. Accident: AP to AT ---
+    // Other sections rendering (Accidents, PO/CA, etc.)
     let accAP = filteredData.reduce((acc, r) => acc + getVal(r, "AP"), 0);
     let accAQ = filteredData.reduce((acc, r) => acc + getVal(r, "AQ"), 0);
     let accAR = filteredData.reduce((acc, r) => acc + getVal(r, "AR"), 0);
@@ -170,7 +155,6 @@ async function applyFilters() {
     updateElementText("total-casualties-died", accAQ);
     updateElementText("total-injured", accAR + accAT);
 
-    // --- 3. PO & CA Without EPP: AD to AF ---
     let sumAD = filteredData.reduce((acc, r) => acc + getVal(r, "AD"), 0);
     let sumAE = filteredData.reduce((acc, r) => acc + getVal(r, "AE"), 0);
     let sumAF = filteredData.reduce((acc, r) => acc + getVal(r, "AF"), 0);
@@ -184,104 +168,8 @@ async function applyFilters() {
     updateElementText("total-po", sumAD);
     updateElementText("total-ca", sumAE);
 
-    // --- 4. E-Police App: AG to AO ---
-    let eppCols = ["AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO"];
-    let eppValues = eppCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
-    
-    renderCards({
-        "epp-code-1": eppValues[0],
-        "epp-code-2": eppValues[1],
-        "epp-code-3": eppValues[2] + eppValues[3],
-        "epp-code-4": eppValues[2],
-        "epp-code-5": eppValues[3],
-        "epp-code-6": eppValues[4],
-        "epp-code-7": eppValues[5],
-        "epp-code-8": eppValues[6],
-        "epp-code-9": eppValues[7],
-        "epp-code-10": eppValues[8]
-    });
-    updateElementText("epp-total-po", eppValues[2] + eppValues[3]);
-    updateElementText("epp-total-ca", eppValues[4]);
-    updateElementText("epp-total-vehicles", eppValues[6] + eppValues[7] + eppValues[8]);
-
-    // --- 5. Help & Other Heads ---
-    let helpCols = ["AU", "AV", "AW", "AX", "AZ", "BA", "BB", "BC", "BD", "BE"];
-    let helpValues = helpCols.map(col => filteredData.reduce((acc, r) => acc + getVal(r, col), 0));
-    let sumAY = filteredData.reduce((acc, r) => acc + getVal(r, "AY"), 0);
-    let sumBF = filteredData.reduce((acc, r) => acc + getVal(r, "BF"), 0);
-
-    renderCards({
-        "help-code-1": helpValues[0],
-        "help-code-2": helpValues[1],
-        "help-code-3": helpValues[2],
-        "help-code-4": helpValues[3],
-        "help-code-5": helpValues[4],
-        "help-code-6": helpValues[5],
-        "help-code-7": helpValues[6],
-        "help-code-8": helpValues[7],
-        "help-code-9": helpValues[8],
-        "help-code-10": helpValues[9]
-    });
-    updateElementText("total-encroachment", helpValues[0] + helpValues[1]);
-    updateElementText("total-help", sumAY);
-    updateElementText("total-motorcycle-seized", sumBF);
-
-    // --- 6. Recovery & Seizure Inventory ---
-    let recoveryCards = {};
-    for (let i = 59; i <= 63; i++) {
-        let col = columnIndexToLetter(i);
-        recoveryCards[`rec-code-${i - 58}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    for (let i = 66; i <= 72; i++) {
-        let col = columnIndexToLetter(i);
-        recoveryCards[`rec-code-${i - 60}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    renderCards(recoveryCards);
-    updateElementText("total-bullets", filteredData.reduce((acc, r) => acc + getVal(r, "BL"), 0));
-    updateElementText("total-cartridges", filteredData.reduce((acc, r) => acc + getVal(r, "BM"), 0));
-    updateElementText("total-weapons-recovered", (recoveryCards["rec-code-1"] || 0) + (recoveryCards["rec-code-5"] || 0));
-
-    // --- 7. Heinous Crime ---
-    let heinousCards = {};
-    for (let i = 73; i <= 84; i++) {
-        let col = columnIndexToLetter(i);
-        heinousCards[`heinous-code-${i - 72}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    renderCards(heinousCards);
-    updateElementText("total-heinous-reported", filteredData.reduce((acc, r) => acc + getVal(r, "CG"), 0));
-    updateElementText("total-foiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CH"), 0));
-    updateElementText("total-unfoiled-crime", filteredData.reduce((acc, r) => acc + getVal(r, "CI"), 0));
-
-    // --- 8. E-Challan Analysis ---
-    let challanCards = {};
-    for (let i = 89; i <= 94; i++) {
-        let col = columnIndexToLetter(i);
-        challanCards[`challan-code-${i - 88}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    challanCards["challan-code-7"] = filteredData.reduce((acc, r) => acc + getVal(r, "CS"), 0);
-    challanCards["challan-code-8"] = filteredData.reduce((acc, r) => acc + getVal(r, "CT"), 0);
-    renderCards(challanCards);
-    updateElementText("total-challans", filteredData.reduce((acc, r) => acc + getVal(r, "CJ"), 0));
-    updateElementText("total-amount-imposed", filteredData.reduce((acc, r) => acc + getVal(r, "CR"), 0));
-
-    // --- 9. PKM Services ---
-    let pkmCards = {};
-    for (let i = 100; i <= 105; i++) {
-        let col = columnIndexToLetter(i);
-        pkmCards[`pkm-code-${i - 99}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    for (let i = 107; i <= 113; i++) {
-        let col = columnIndexToLetter(i);
-        pkmCards[`pkm-code-${i - 100}`] = filteredData.reduce((acc, r) => acc + getVal(r, col), 0);
-    }
-    renderCards(pkmCards);
-    updateElementText("total-pkm-services", filteredData.reduce((acc, r) => acc + getVal(r, "DB"), 0));
-    updateElementText("total-learner-issued", filteredData.reduce((acc, r) => acc + getVal(r, "DC") + getVal(r, "DF"), 0));
-
-    if(activeTarget) {
+    if (activeTarget) {
         loadModule(activeTarget, activeHeadIndex);
-    } else {
-        console.log(`✅ Filter Matrix Updated!\nUnit: ${unit} | Timeline: ${startM} to ${closeM} (${year})`);
     }
 }
 
@@ -291,12 +179,12 @@ function loadModule(moduleName, headIndex) {
     const unit = document.getElementById('policeUnitSelect') ? document.getElementById('policeUnitSelect').value : "";
     const year = document.getElementById('yearSelect') ? document.getElementById('yearSelect').value : "";
     const startM = document.getElementById('startMonthSelect') ? document.getElementById('startMonthSelect').value : "";
-    const closeM = document.getElementById('closeMonthSelect') ? document.getElementById('closeMonthSelect').value : "";
+    const closeM = document.getElementById('closeMonthSelect') ? document.getElementById('closeMonthSelectENT') || document.getElementById('closeMonthSelect').value : "";
 
     const titleEl = document.getElementById('displayTitle');
     const subEl = document.getElementById('displaySubtitle');
-    if(titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
-    if(subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
+    if (titleEl) titleEl.innerText = `${moduleName} :: Analytics Matrix`;
+    if (subEl) subEl.innerText = `Unit: ${unit} // Timeline: ${startM} to ${closeM} ${year}`;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
