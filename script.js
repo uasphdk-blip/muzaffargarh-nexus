@@ -1,5 +1,5 @@
 // Google Apps Script Web App Deployment URL
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw8ygzNGj5OmS06tLTvHYomYksHBvqQboPVwZjIbogEmWekuc31l6ycK0kz6I_2AHG7JQ/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTJJzHdINEwYSz--Ql05QTUtYZpsIigxjPGHfG2xO9Gu51v8rozRVgLBDnnnmMG1sqEw/exec";
 
 let activeTarget = null;
 let activeHeadIndex = 1;
