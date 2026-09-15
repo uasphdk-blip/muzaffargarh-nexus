@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Muzaffargarh Nexus - Advanced Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <style>
+        html, body { min-height: 100%; background: #050b14; color: #e2e8f0; font-family: Arial, sans-serif; }
+        body { background-image: radial-gradient(circle at 15% 0%, rgba(0,240,255,.12), transparent 32%), radial-gradient(circle at 90% 20%, rgba(157,0,255,.12), transparent 30%); }
+        body::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 42px 42px; mask-image: linear-gradient(to bottom, black, transparent 88%); }
+        .panel { background: linear-gradient(145deg, rgba(13,22,38,.92), rgba(8,16,32,.72)); border: 1px solid rgba(0,240,255,.25); box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04); backdrop-filter: blur(16px); transform: translateZ(0); }
+        .kpi { background: linear-gradient(145deg, rgba(8,16,32,.78), rgba(15,23,42,.52)); border: 1px solid rgba(0,240,255,.2); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+        .kpi:hover { transform: translateY(-3px); border-color: rgba(34,211,238,.65); box-shadow: 0 12px 30px rgba(0,240,255,.12); }
+        .control { background: rgba(2,6,23,.8); border: 1px solid rgba(0,240,255,.3); }
+        .control:focus { border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,.12); outline: none; }
+        header.panel { box-shadow: 0 26px 70px rgba(0,0,0,.45), 0 0 35px rgba(0,240,255,.08), inset 0 1px 0 rgba(255,255,255,.08); transform: perspective(1100px) rotateX(1deg); }
+        header.panel::after { content: ""; position: absolute; inset: auto 8% -22px; height: 32px; background: rgba(0,240,255,.18); filter: blur(24px); pointer-events: none; }
+        .panel-3d { position: relative; overflow: hidden; }
+        .panel-3d::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, rgba(255,255,255,.08), transparent 22%, transparent 75%, rgba(0,240,255,.06)); opacity: .65; }
+        .panel-3d::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: -24px; height: 35px; background: rgba(0,240,255,.15); filter: blur(24px); pointer-events: none; }
+        .panel-3d { box-shadow: 0 24px 55px rgba(0,0,0,.42), 0 0 28px rgba(0,240,255,.06), inset 0 1px 0 rgba(255,255,255,.06); }
+        .kpi { position: relative; transform-style: preserve-3d; }
+        .kpi::after { content: ""; position: absolute; inset: 8px; border: 1px solid rgba(255,255,255,.035); border-radius: 1rem; pointer-events: none; transform: translateZ(12px); }
+        .icon-orb { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 999px; background: radial-gradient(circle at 30% 25%, #fff, #22d3ee 12%, #2563eb 58%, #0f172a 72%); box-shadow: 0 0 22px rgba(34,211,238,.42); }
+        .section-title { letter-spacing: .12em; text-transform: uppercase; font-size: .72rem; color: #67e8f9; font-family: monospace; }
+        .rank-row { animation: rise .45s ease both; }
+        .rank-row:hover { background: rgba(34,211,238,.08); border-color: rgba(34,211,238,.55); transform: translateX(-2px); }
+        @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        #topNavbar { position: sticky; top: .75rem; z-index: 50; background: rgba(8,16,32,.94); }
+        @media (max-width: 640px) { body { padding: .75rem; } #chart { height: 360px; } }
+        /* Professional polish */
+        body::after { content:""; position:fixed; inset:-20%; pointer-events:none; z-index:-1; background:radial-gradient(circle at 18% 15%,rgba(34,211,238,.1),transparent 28%),radial-gradient(circle at 82% 78%,rgba(168,85,247,.09),transparent 30%); animation:ambientDrift 18s ease-in-out infinite alternate; }
+        @keyframes ambientDrift { from { transform:translate3d(-2%,-1%,0) scale(1); } to { transform:translate3d(2%,1%,0) scale(1.06); } }
+        :focus-visible { outline:2px solid #67e8f9 !important; outline-offset:3px; }
+        [data-tooltip] { position:relative; cursor:help; }
+        [data-tooltip]::after { content:attr(data-tooltip); position:absolute; z-index:20; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(4px); width:max-content; max-width:220px; padding:.5rem .65rem; border:1px solid rgba(103,232,249,.35); border-radius:.6rem; background:rgba(3,7,18,.96); color:#e2e8f0; font:500 11px/1.35 Arial,sans-serif; opacity:0; pointer-events:none; transition:opacity .18s,transform .18s; }
+        [data-tooltip]:hover::after,[data-tooltip]:focus-within::after { opacity:1; transform:translateX(-50%) translateY(0); }
+        .summary-banner { position:relative; overflow:hidden; background:linear-gradient(100deg,rgba(8,47,73,.78),rgba(49,24,80,.62)); border:1px solid rgba(103,232,249,.38); box-shadow:0 12px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -1px 0 rgba(0,240,255,.18); transform:perspective(900px) rotateX(1deg); }
+        .summary-banner::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(110deg,rgba(255,255,255,.12),transparent 24%,transparent 72%,rgba(34,211,238,.12)); animation:summarySheen 7s ease-in-out infinite; }
+        .summary-banner::after { content:""; position:absolute; left:8%; right:8%; bottom:-18px; height:22px; pointer-events:none; background:rgba(0,240,255,.2); filter:blur(18px); }
+        .summary-track { position:relative; z-index:1; display:flex; width:max-content; min-width:100%; white-space:nowrap; will-change:transform; animation:summaryGlide 9s ease-in-out infinite; }
+        .summary-signal { position:absolute; z-index:2; top:50%; width:9px; height:9px; border-radius:999px; opacity:0; transform:translateY(-50%) scale(.65); pointer-events:none; }
+        .summary-signal-green { left:5%; background:#4ade80; box-shadow:0 0 8px #4ade80,0 0 22px rgba(74,222,128,.9); animation:summaryGreenSignal 9s ease-in-out infinite; }
+        .summary-signal-red { right:5%; background:#fb7185; box-shadow:0 0 8px #fb7185,0 0 22px rgba(251,113,133,.9); animation:summaryRedSignal 9s ease-in-out infinite; }
+        @keyframes summaryGlide { 0%,8% { transform:translateX(0); } 42% { transform:translateX(var(--summary-distance, 0px)); } 74%,83.333% { transform:translateX(0); } 100% { transform:translateX(0); } }
+        @keyframes summaryGreenSignal { 0%,83.333% { left:5%; opacity:0; transform:translateY(-50%) scale(.65); } 86% { left:50%; opacity:1; transform:translate(-50%,-50%) scale(1.35); } 89% { left:50%; opacity:1; transform:translate(-50%,-50%) scale(2); } 92%,100% { left:5%; opacity:1; transform:translateY(-50%) scale(1); } }
+        @keyframes summaryRedSignal { 0%,83.333% { right:5%; opacity:0; transform:translateY(-50%) scale(.65); } 86% { right:50%; opacity:1; transform:translate(50%,-50%) scale(1.35); } 89% { right:50%; opacity:1; transform:translate(50%,-50%) scale(2); } 92%,100% { right:5%; opacity:1; transform:translateY(-50%) scale(1); } }
+        @keyframes summarySheen { 0%,100% { opacity:.35; transform:translateX(-8%); } 50% { opacity:.8; transform:translateX(8%); } }
+        .spotlight { background:linear-gradient(120deg,rgba(16,185,129,.18),rgba(34,211,238,.08)); border:1px solid rgba(52,211,153,.3); }
+        .mobile-bottom-nav { display:none; }
+        @media (max-width:640px) { body { padding-bottom:5rem !important; } .mobile-bottom-nav { display:flex; position:fixed; z-index:60; left:.75rem; right:.75rem; bottom:.75rem; justify-content:space-around; padding:.55rem; border:1px solid rgba(34,211,238,.35); border-radius:1rem; background:rgba(3,7,18,.94); backdrop-filter:blur(14px); } .mobile-bottom-nav a { color:#a5f3fc; font:600 10px monospace; text-align:center; padding:.35rem .55rem; } }
+        @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; } }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+    <main class="mx-auto w-full max-w-[1800px] space-y-4">
+        <header id="topNavbar" class="panel rounded-3xl p-5 flex flex-col lg:flex-row justify-between gap-4 relative overflow-hidden">
+            <div class="absolute -right-16 -top-20 h-52 w-52 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"></div>
+            <div>
+                <p class="text-xs tracking-[.3em] text-cyan-400 font-mono">MUZAFFARGARH NEXUS // INSIGHTS</p>
+                <h1 class="mt-2 text-2xl md:text-4xl font-extrabold text-white">Advanced Analytics</h1>
+                <p class="mt-2 text-sm text-slate-400">District-wide performance intelligence and year comparison.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 relative z-10">
+                <span id="apiBadge" data-tooltip="Live connection to district telemetry API" class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-mono text-emerald-300"><span class="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-400"></span> LIVE</span>
+                <select id="year" class="control rounded-xl px-3 py-2 text-sm"></select>
+                <select id="startMonth" class="control rounded-xl px-3 py-2 text-sm"></select>
+                <select id="closeMonth" class="control rounded-xl px-3 py-2 text-sm"></select>
+                <select id="mainHeading" aria-label="Main performance heading" class="control rounded-xl px-3 py-2 text-sm"></select>
+                <select id="subHeading" aria-label="Summary card heading" class="control rounded-xl px-3 py-2 text-sm"></select>
+                <a href="./index.html" class="rounded-xl border border-cyan-500/40 px-4 py-2 text-sm text-cyan-300 hover:bg-cyan-950/60">← Dashboard</a>
+            </div>
+        </header>
+        <div id="status" class="panel rounded-2xl px-4 py-3 text-sm text-cyan-300">Loading district telemetry…</div>
+        <section id="executiveSummary" class="summary-banner rounded-2xl px-4 py-3" aria-live="polite">
+            <span class="summary-signal summary-signal-green" aria-hidden="true"></span><span class="summary-signal summary-signal-red" aria-hidden="true"></span><div class="summary-track items-center gap-x-3"><span class="text-[10px] font-mono tracking-[.2em] text-cyan-300">EXECUTIVE SUMMARY</span><span id="summaryText" class="text-xs text-slate-200">Loading the district outlook...</span></div>
+        </section>
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="kpi rounded-2xl p-4" data-tooltip="Sum of the selected metric across all units"><div class="flex items-center justify-between"><div class="text-xs text-slate-400">DISTRICT TOTAL</div><span class="icon-orb">Σ</span></div><div id="total" class="mt-2 text-2xl font-bold text-cyan-300">0</div></div>
+            <div class="kpi rounded-2xl p-4"><div class="flex items-center justify-between"><div class="text-xs text-slate-400">DISTRICT AVERAGE</div><span class="icon-orb">≈</span></div><div id="average" class="mt-2 text-2xl font-bold text-fuchsia-300">0</div></div>
+            <div class="kpi rounded-2xl p-4 spotlight" data-tooltip="Highest-performing unit in the selected period"><div class="flex items-center justify-between"><div class="text-xs text-slate-400">TOP UNIT</div><span class="icon-orb">★</span></div><div id="topUnit" class="mt-2 text-lg font-bold text-emerald-300 truncate">—</div></div>
+            <div class="kpi rounded-2xl p-4"><div class="flex items-center justify-between"><div class="text-xs text-slate-400">ACTIVE UNITS</div><span class="icon-orb">◉</span></div><div id="activeUnits" class="mt-2 text-2xl font-bold text-amber-300">0</div></div>
+        </section>
+        <section id="spotlight" class="spotlight rounded-2xl p-4" aria-live="polite"><div class="section-title">Top performer spotlight</div><div id="spotlightText" class="mt-1 text-sm text-emerald-200">Awaiting telemetry...</div></section>
+        <section class="grid lg:grid-cols-12 gap-4">
+            <div class="panel panel-3d rounded-3xl p-4 lg:col-span-8">
+                <div class="flex justify-between items-center gap-3"><div><div class="section-title">Telemetry visualizer</div><h2 class="mt-1 font-bold text-white">Unit comparison</h2></div><span id="trend" class="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-xs font-mono text-cyan-300">—</span></div>
+                <div id="chart" class="h-[430px] mt-2"></div>
+            </div>
+            <div class="panel panel-3d rounded-3xl p-4 lg:col-span-4">
+                <div class="section-title">District leaderboard</div><h2 class="mt-1 font-bold text-white">Performance ranking</h2>
+                <div id="ranking" class="mt-3 space-y-2 max-h-[400px] overflow-y-auto"></div>
+            </div>
+        </section>
+        <footer class="text-center text-xs text-slate-500">Advanced analytics • <span id="updated">—</span></footer>
+    </main>
+    <script>
+        const ACCESS_SESSION_KEY = "mzx_nexus_user";
+        let receivedDashboardSession = null;
+        function readSessionHandoff() {
+            try {
+                const match = window.location.hash.replace(/^#/, "").match(/(?:^|&)mzx_session=([^&]+)/);
+                if (!match) return null;
+                const session = JSON.parse(decodeURIComponent(match[1]));
+                if (!session || !session.username || !session.token) return null;
+                sessionStorage.setItem(ACCESS_SESSION_KEY, JSON.stringify(session));
+                history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                return session;
+            } catch (error) {
+                return null;
+            }
+        }
+        receivedDashboardSession = readSessionHandoff();
+        function hasDashboardSession() {
+            try {
+                const raw = sessionStorage.getItem(ACCESS_SESSION_KEY) || (receivedDashboardSession ? JSON.stringify(receivedDashboardSession) : null);
+                const user = raw ? JSON.parse(raw) : null;
+                return Boolean(user && user.username && user.token);
+            } catch (error) {
+                return false;
+            }
+        }
+        window.addEventListener("message", function(event) {
+            const expectedOrigin = window.location.protocol === "file:" ? "null" : window.location.origin;
+            if (event.origin !== expectedOrigin || event.source !== window.opener || !event.data || event.data.type !== "mzx-analytics-session") return;
+            receivedDashboardSession = event.data.session || null;
+            if (hasDashboardSession()) {
+                init();
+            }
+        });
+        if (window.opener) {
+            const targetOrigin = window.location.protocol === "file:" ? "*" : window.location.origin;
+            window.opener.postMessage({ type: "mzx-analytics-session-request" }, targetOrigin);
+        }
+        const API_URL = "https://script.google.com/macros/s/AKfycbxsjzjso_Yfopgc8AK8LguuvVrO1P_mxwP9Vc1OPxQkikBdbNkWuZ1baK2syMkeMGG9sA/exec";
+        const units = ["Riaz Abad","Khan Pur","Head M. Wala","Jeewana Bangla","Ghazi Ghat","Head Bakaini","Head Punjnad","Hamzay Wali","Meer Haji","Khander Meerani","Gabbar Arain","Head Tounsa","Langar Wah"];
+        const moduleData = {
+            "FIR Analysis": ["Illicit Arms","PEHO ¾,4/79","Narcotics (CNSA)","279 PPC","341 PPC","285 PPC","379/411 PPC","454/457 PPC","290/291 PPC","420 PPC","Amplifier Act","14 Punjab Sc/Ordinance 2015","97-A MVO","99A MVO","112/115/3A/89A MVO","506/341/279/353/186 PPC","Gambling Act","322/337G/427/279 PPC","216A PPC","170 PPC/25D Telegraphy Act","ALMR","Act 1958-9 (Beggars)","Punjab Food Authority Act","Punjab Marriage F/Act 2016","Ehtram-e-Ramzan Act 1981","Others","Total FIR"],
+            "Accident": ["Fatal Accident","Fatal Accident - Expired","Fatal Accident - Injured","Non-Fatal Accident","Non-Fatal Accident - Injured","Total Accidents","Total Casualties (Expired)","Total Injured"],
+            "PO & CA Without EPP": ["PO Arrested","PO (A Category)","PO (B Category)","CA Arrested","Total PO","Total CA"],
+            "E-Police App (EPP)": ["Person Checked","Vehicle Checked","PO","PO (A Category)","PO (B Category)","CA","Stolen Vehicle Recovered","Motorcycle Recovered","Car Recovered","Other Vehicles Recovered","Total PO","Total CA","Total Vehicle Recovered"],
+            "Help & Other Heads": ["Temporary Encroachment","Permanent Encroachment","General Help","1124 Help","Lost & Found Child","Cattle Diary","Reflector","Motorcycle 550/CRPC","Motorcycle 115/MVO","Motorcycle 134/CRPC","Total Encroachment","Total Help","Total Motorcycle Seized"],
+            "Recovery & Seizure Inventory": ["Kalashnikovs Recovered","Rifles Recovered","Guns & Carbines Recovered","Repeaters Recovered","Pistols & Revolvers Recovered","Liquor (Liters)","Lehn (Liters)","Poust (KG)","Opium (Grams)","Heroin (Grams)","Hashish (Grams)","Chars (Grams)","Total Bullets","Total Cartridges","Total Weapons Recovered"],
+            "Heinous Crime": ["Dacoity Robbery with Murder","Dacoity + Robbery with injury","Dacoity","Highway Robbery","Highway Robbery at Petrol Pump","M/V Snatching","Kidnapping","Murder","Attempted Murder","Mobile Snatching","Shop Robbery","Police Encounter","Total Heinous Crime Reported","Total Foiled Crime Reported","Total Unfoiled Crime Reported"],
+            "E-Challan Analysis": ["Underage Drivers","Without Helmet","Overload Transport","Overspeeding","Paid Challans","Unpaid Challans","Paid Amount","Unpaid Amount","Total Challans","Total Amount Imposed"],
+            "PKM Services": ["Crime Report","Loss Report","Violence Against Women Report","Copy of FIR","Tenants Registration","Registration of Private Employee (ROPE)","Learner License Issued","Learner License Renewal","Regular License Renewal","International License Renewal","Character Certificate","Police Verification","Vehicle Verification","Total PKM Services","Total Learner Issues"]
+        };
+        const moduleNames = Object.keys(moduleData);
+        let rows = [], chart;
+        const col = (n) => { let s = ""; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
+        const num = (row, key) => Number(row.columns && row.columns[key]) || 0;
+        function moduleValues(row, module) {
+            const s = (key) => num(row, key), range = (a,b) => { let total = 0; for (let i=a; i<=b; i++) total += num(row, col(i)); return total; };
+            if (module === "FIR Analysis") return [...Array.from({length:26}, (_,i) => num(row, col(i+3))), s("AC")];
+            if (module === "Accident") { const ap=s("AP"), aq=s("AQ"), ar=s("AR"), asv=s("AS"), at=s("AT"); return [ap,aq,ar,asv,at,ap+asv,aq,ar+at]; }
+            if (module === "PO & CA Without EPP") { const ad=s("AD"), ae=s("AE"), af=s("AF"); return [ad+ae,ad,ae,af,ad+ae,af]; }
+            if (module === "E-Police App (EPP)") { const ag=s("AG"),ah=s("AH"),ai=s("AI"),aj=s("AJ"),ak=s("AK"),al=s("AL"),am=s("AM"),an=s("AN"),ao=s("AO"); return [ag,ah,ai+aj,ai,aj,ak,al,am,an,ao,ai+aj,ak,am+an+ao]; }
+            if (module === "Help & Other Heads") { const au=s("AU"),av=s("AV"),aw=s("AW"),ax=s("AX"),az=s("AZ"),ba=s("BA"),bb=s("BB"),bc=s("BC"),bd=s("BD"),be=s("BE"); return [au,av,aw,ax,az,ba,bb,bc,bd,be,au+av,s("AY"),s("BF")]; }
+            if (module === "Recovery & Seizure Inventory") { const values=[]; for(let i=59;i<=63;i++) values.push(num(row,col(i))); for(let i=66;i<=72;i++) values.push(num(row,col(i))); values.push(s("BL"),s("BM")); values.push(values.slice(0,5).reduce((a,b)=>a+b,0)); return values; }
+            if (module === "Heinous Crime") return [...Array.from({length:12},(_,i)=>num(row,col(i+73))),s("CG"),s("CH"),s("CI")];
+            if (module === "E-Challan Analysis") return [...Array.from({length:6},(_,i)=>num(row,col(i+89))),s("CS"),s("CT"),s("CJ"),s("CR")];
+            if (module === "PKM Services") { const values=[]; for(let i=100;i<=105;i++) values.push(num(row,col(i))); for(let i=107;i<=113;i++) values.push(num(row,col(i))); values.push(values.slice(0,6).reduce((a,b)=>a+b,0), values.slice(6,10).reduce((a,b)=>a+b,0)); return values; }
+            return [];
+        }
+        function metricValue(row, module, index) { return Number(moduleValues(row, module)[index]) || 0; }
+        function filtered(year, unit) { return rows.filter(r => String(r.year) === String(year) && (!unit || String(r.policeUnit) === unit)); }
+        function animateKpi(id, value) { const el=document.getElementById(id); if(!el) return; const target=Number(value)||0, start=Number(el.dataset.value||0), t0=performance.now(); el.dataset.value=target; if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=target.toLocaleString();return;} function tick(now){const p=Math.min(1,(now-t0)/550);el.textContent=(start+(target-start)*(1-Math.pow(1-p,3))).toLocaleString(undefined,{maximumFractionDigits:1});if(p<1)requestAnimationFrame(tick);} requestAnimationFrame(tick); }
+
+        function render() {
+            const year = document.getElementById("year").value, module = document.getElementById("mainHeading").value;
+            const selectedSubHeading = document.getElementById("subHeading").value;
+            const metricIndex = selectedSubHeading === "" ? -1 : Number(selectedSubHeading);
+            const metric = (moduleData[module] || [])[metricIndex] || "";
+            if (metricIndex < 0 || !metric) {
+                document.getElementById("status").innerText = "Select a Total Summary Card to view original dashboard data.";
+                document.getElementById("status").className = "panel rounded-2xl px-4 py-3 text-sm text-cyan-300";
+                document.getElementById("total").innerText = "—";
+                document.getElementById("average").innerText = "—";
+                document.getElementById("topUnit").innerText = "Select a card";
+                document.getElementById("activeUnits").innerText = "—";
+                document.getElementById("trend").innerText = "SELECT CARD";
+                document.getElementById("ranking").innerHTML = `<div class="rounded-xl border border-cyan-500/30 bg-slate-950/40 p-4 text-sm text-slate-400">Choose one of this heading's Total Summary Cards.</div>`;
+                if (chart) {
+                    chart.dispose();
+                    chart = null;
+                }
+                return;
+            }
+            const start = document.getElementById("startMonth").value, close = document.getElementById("closeMonth").value;
+            const startIndex = MONTHS.indexOf(start), closeIndex = MONTHS.indexOf(close);
+            if (startIndex > closeIndex) {
+                document.getElementById("status").innerText = "Invalid month range: Start Month must be before or equal to Close Month.";
+                document.getElementById("status").className = "panel rounded-2xl px-4 py-3 text-sm text-rose-300";
+                document.getElementById("total").innerText = "—";
+                document.getElementById("average").innerText = "—";
+                document.getElementById("topUnit").innerText = "Invalid range";
+                document.getElementById("activeUnits").innerText = "—";
+                document.getElementById("trend").innerText = "INVALID RANGE";
+                document.getElementById("ranking").innerHTML = `<div class="rounded-xl border border-rose-500/30 bg-rose-950/20 p-4 text-sm text-rose-300">Select a Close Month that is the same as or later than the Start Month.</div>`;
+                if (chart) {
+                    chart.dispose();
+                    chart = null;
+                }
+                return;
+            }
+            const lo = startIndex, hi = closeIndex;
+            const inRange = (targetYear, unit) => filtered(targetYear, unit).filter(row => {
+                const monthIndex = MONTHS.indexOf(String(row.month || ""));
+                return monthIndex < 0 || (monthIndex >= lo && monthIndex <= hi);
+            });
+            const data = units.map(unit => ({ unit, value: inRange(year, unit).reduce((s, r) => s + metricValue(r, module, metricIndex), 0) }));
+            const previous = units.map(unit => inRange(Number(year) - 1, unit).reduce((s, r) => s + metricValue(r, module, metricIndex), 0));
+            const total = data.reduce((s, x) => s + x.value, 0), avg = data.length ? total / data.length : 0;
+            const ranked = data.slice().sort((a,b) => b.value - a.value);
+            animateKpi("total", total);
+            animateKpi("average", avg);
+            document.getElementById("topUnit").innerText = ranked[0] ? `${ranked[0].unit} (${ranked[0].value.toLocaleString()})` : "—";
+            animateKpi("activeUnits", data.filter(x => x.value > 0).length);
+            const oldTotal = previous.reduce((s,x) => s + x, 0);
+            const change = oldTotal ? ((total - oldTotal) / oldTotal * 100) : 0;
+            const summary = document.getElementById("summaryText"); if (summary) summary.textContent = `${metric} performance for ${year}, ${start}-${close}. ${ranked[0] ? ranked[0].unit : "No unit"} leads with ${(ranked[0] ? ranked[0].value : 0).toLocaleString()} and the district is ${change >= 0 ? "up" : "down"} ${Math.abs(change).toFixed(1)}% year-on-year.`;
+            const spotlight = document.getElementById("spotlightText"); if (spotlight) spotlight.textContent = ranked[0] ? `TOP: ${ranked[0].unit} leads at ${ranked[0].value.toLocaleString()} (${((ranked[0].value / Math.max(1,total))*100).toFixed(1)}% of district total).` : "No performance data is available for these filters.";
+            document.getElementById("trend").innerText = `${start}–${close} // YEAR-ON-YEAR ${change >= 0 ? "↑" : "↓"} ${Math.abs(change).toFixed(1)}%`;
+            document.getElementById("ranking").innerHTML = ranked.some(x => x.value > 0) ? ranked.map((x,i) => {
+                const badge = i === 0 ? "🏆" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
+                return `<div class="rank-row rounded-xl border border-cyan-500/20 bg-slate-950/40 p-3 transition" style="animation-delay:${Math.min(i, 10) * 40}ms"><div class="flex justify-between text-sm gap-2"><span class="truncate"><b class="mr-1 text-cyan-300">${badge}</b>${x.unit}</span><b class="shrink-0 text-white">${x.value.toLocaleString()}</b></div><div class="h-1.5 mt-2 rounded bg-slate-800 overflow-hidden"><div class="h-1.5 rounded bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500 transition-all duration-700" style="width:${Math.min(100, x.value / Math.max(1, ranked[0].value) * 100)}%"></div></div></div>`;
+            }).join("") : `<div class="rounded-xl border border-slate-600/40 bg-slate-950/40 p-5 text-sm text-slate-400">No telemetry matches these filters. Try a wider date range.</div>`;
+            if (chart) chart.dispose(); chart = echarts.init(document.getElementById("chart"));
+            chart.setOption({ backgroundColor:"transparent", animationDuration:900, tooltip:{trigger:"axis",backgroundColor:"rgba(3,7,18,.96)",borderColor:"rgba(34,211,238,.45)",textStyle:{color:"#f8fafc"}}, legend:{top:0,textStyle:{color:"#94a3b8"}}, grid:{top:"12%",left:"4%",right:"3%",bottom:"18%",containLabel:true}, xAxis:{type:"category",data:units,axisLabel:{color:"#94a3b8",rotate:30,interval:0}}, yAxis:{type:"value",axisLabel:{color:"#64748b"},splitLine:{lineStyle:{color:"rgba(255,255,255,.06)"}}}, series:[{type:"bar",name:"Current year",data:data.map(x=>x.value),barMaxWidth:28,itemStyle:{borderRadius:[6,6,0,0],color:{type:"linear",x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:"#22d3ee"},{offset:1,color:"#7c3aed"}]}}},{type:"line",data:previous,name:"Previous year",symbol:"circle",symbolSize:6,lineStyle:{type:"dashed",color:"#f97316"},itemStyle:{color:"#f97316"}}]});
+        }
+        async function init() {
+            if (window.__analyticsInitialized) return;
+            window.__analyticsInitialized = true;
+            if (!hasDashboardSession()) {
+                document.getElementById("status").innerText = "AUTHENTICATION REQUIRED • Open Advanced Analytics from the signed-in dashboard.";
+                document.getElementById("status").className = "panel rounded-2xl px-4 py-3 text-sm text-rose-300";
+                document.querySelectorAll("select").forEach((select) => { select.disabled = true; });
+                return;
+            }
+            try {
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Telemetry request timed out")), 12000));
+                const response = await Promise.race([fetch(API_URL, {cache:"no-store"}), timeout]);
+                if (!response.ok) throw new Error(`Telemetry request failed (${response.status})`);
+                rows = await response.json();
+                if (!Array.isArray(rows)) throw new Error("Telemetry response was not an array");
+                const years = [...new Set(rows.map(r => String(r.year)))].sort();
+                document.getElementById("startMonth").innerHTML = MONTHS.map(month => `<option>${month}</option>`).join("");
+                document.getElementById("closeMonth").innerHTML = MONTHS.map(month => `<option>${month}</option>`).join("");
+                document.getElementById("year").innerHTML = years.map(y => `<option>${y}</option>`).join("");
+                document.getElementById("mainHeading").innerHTML = moduleNames.map(m => `<option value="${m}">${m}</option>`).join("");
+                document.getElementById("mainHeading").value = "FIR Analysis";
+                populateSubHeadings();
+                document.getElementById("year").value = years[years.length - 1] || "";
+                document.getElementById("startMonth").value = "January";
+                document.getElementById("closeMonth").value = "December";
+                document.getElementById("status").innerText = `CONNECTED • ${rows.length.toLocaleString()} telemetry rows loaded`;
+                document.getElementById("status").className = "panel rounded-2xl px-4 py-3 text-sm text-cyan-300";
+                render();
+                document.getElementById("updated").innerText = `Updated ${new Date().toLocaleString()}`;
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").innerText = "Unable to load telemetry. Please return to the dashboard and retry.";
+                document.getElementById("status").setAttribute("role", "alert");
+                document.getElementById("apiBadge").innerHTML = '<span class="mr-1 inline-block h-2 w-2 rounded-full bg-rose-400"></span> OFFLINE';
+                document.getElementById("status").className += " text-rose-300";
+            }
+        }
+        const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        function refreshSummaryMotion() {
+            document.querySelectorAll(".summary-banner").forEach(function (banner) {
+                const track = banner.querySelector(".summary-track");
+                if (!track) return;
+                const distance = Math.max(0, banner.clientWidth - track.scrollWidth - 32);
+                track.style.setProperty("--summary-distance", distance + "px");
+            });
+        }
+        refreshSummaryMotion();
+        window.addEventListener("resize", refreshSummaryMotion);
+        if (window.ResizeObserver) new ResizeObserver(refreshSummaryMotion).observe(document.getElementById("executiveSummary"));
+        function populateSubHeadings() {
+            const module = document.getElementById("mainHeading").value;
+            const heads = moduleData[module] || [];
+            const totalHeads = heads.map((head, index) => ({ head, index })).filter(item => /^Total\b/i.test(item.head) || (module === "E-Police App (EPP)" && item.index < 2));
+            document.getElementById("subHeading").innerHTML = `<option value="">Select Total Summary Card</option>` + totalHeads.map(item => `<option value="${item.index}">${item.head}</option>`).join("");
+            document.getElementById("subHeading").value = "";
+        }
+        document.getElementById("year").addEventListener("change", render); document.getElementById("startMonth").addEventListener("change", render); document.getElementById("closeMonth").addEventListener("change", render); document.getElementById("mainHeading").addEventListener("change", () => { populateSubHeadings(); render(); }); document.getElementById("subHeading").addEventListener("change", render); window.addEventListener("resize", () => chart && chart.resize());
+        setTimeout(init, window.opener ? 1500 : 0);
+    </script>
+    <nav class="mobile-bottom-nav" aria-label="Quick navigation"><a href="#executiveSummary">SUMMARY</a><a href="#chart">CHART</a><a href="#ranking">RANKING</a><a href="./index.html">DASHBOARD</a></nav>
+</body>
+</html>
