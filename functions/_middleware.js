@@ -1,10 +1,17 @@
 export async function onRequest(context) {
   const request = context.request;
+  const url = new URL(request.url);
+
+  // API / data fetching requests ko password se bypass karne ke liye
+  if (url.pathname.startsWith('/api/')) {
+    return context.next();
+  }
+
   const Authorization = request.headers.get('Authorization');
 
   // All 14 accounts credentials
   const validCredentials = [
-    'Basic ' + btoa('owner:hmh@8019'),                   // Owner Login
+    'Basic ' + btoa('owner:hmh@8019'),                // Owner Login
     'Basic ' + btoa('ghazighat:Gg@1124'),
     'Basic ' + btoa('riazabad:Ra@1124'),
     'Basic ' + btoa('khanpur:Kp@1124'),
