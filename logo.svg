@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Muzaffargarh Nexus">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06b6d4"/>
+      <stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#081020" stroke="#f5c542" stroke-width="2"/>
+  <circle cx="32" cy="32" r="24" fill="url(#bg)" opacity=".95"/>
+  <path d="M20 43V20h9.5c7 0 11 3.2 11 8.5S36.5 37 29.5 37H26v6h-6Zm6-11h3c3.5 0 5.5-1.2 5.5-3.5S32.5 25 29 25h-3v7Z" fill="#fff"/>
+  <path d="M17 47h30" stroke="#f5c542" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
